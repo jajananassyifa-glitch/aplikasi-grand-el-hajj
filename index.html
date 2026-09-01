@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -174,8 +174,6 @@
 
                 <!-- SECTION KETERANGAN & LOKASI PEKERJAAN JAMAK -->
                 <div id="field-laporan-pekerjaan" class="space-y-4">
-                    
-                    <!-- INPUT LOKASI / AREA MULTI-TEMPAT -->
                     <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-200 space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="block text-xs font-bold text-indigo-900">
@@ -230,7 +228,6 @@
                     <button onclick="mintaAksesGantiLogo()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
                         <i class="fa-solid fa-image mr-1.5"></i> Ganti Logo
                     </button>
-                    <!-- EXPORT SEMUA / GLOBAL -->
                     <button onclick="exportKeExcel()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
                         <i class="fa-solid fa-file-excel mr-1.5 text-emerald-400"></i> Export Semua Laporan
                     </button>
@@ -534,21 +531,36 @@
         </div>
     </div>
 
-    <!-- ENGINE JAVASCRIPT -->
-    <script>
+    <!-- ENGINE JAVASCRIPT TERINTEGRASI FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9c5qPl9HGruxNfRvlOoqaxyxe2ZwDoaA",
+            authDomain: "aplikasi-grand-el-hajj.firebaseapp.com",
+            databaseURL: "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "aplikasi-grand-el-hajj",
+            storageBucket: "aplikasi-grand-el-hajj.firebasestorage.app",
+            messagingSenderId: "205554063779",
+            appId: "1:205554063779:web:c8e5de2802ad9824d16216"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
         const HOTEL_LAT = -6.175392;
         const HOTEL_LNG = 106.827153;
         const RADIUS_MAKSIMAL_KM = 0.5;
 
-        // PENGATURAN JAM ABSENSI DEFAULT
-        let pengaturanJamAbsen = {
+        window.pengaturanJamAbsen = {
             masukMulai: "06:00",
             masukAkhir: "09:00",
             pulangMulai: "16:00",
             pulangAkhir: "21:00"
         };
 
-        let databaseKaryawan = [
+        window.databaseKaryawan = [
             { 
                 nama: "Budi Santoso", 
                 kodeAwal: "001", 
@@ -571,26 +583,64 @@
             }
         ];
 
-        let dataAbsensi = [];
-        let dataLaporan = [];
-        let currentUser = null;
-        let targetModulDipilih = '';
-        let fotoWajahTerambilData = null;
+        window.dataAbsensi = [];
+        window.dataLaporan = [];
+        window.currentUser = null;
+        window.targetModulDipilih = '';
+        window.fotoWajahTerambilData = null;
         
-        let pengumumanKhusus = {
+        window.pengumumanKhusus = {
             TEKNISI: "Pengumuman Khusus Teknisi GRAND EL HAJJ: Perbaikan AC Room 204 & Pengecekan Panel Listrik Utama Didahulukan!",
             OB: "Pengumuman Khusus OB GRAND EL HAJJ: Pembersihan Area Lobby Utama & Polishing Lantai Koridor Lt. 2 Didahulukan!"
         };
 
-        let tempFotoBefore = null;
-        let tempFotoAfter = null;
-        let fotoWajahTerambil = false;
-        let lokasiValid = false;
-        let tempFotoWajahAdmin = null;
-        let streamAdminCam = null;
+        window.tempFotoBefore = null;
+        window.tempFotoAfter = null;
+        window.fotoWajahTerambil = false;
+        window.lokasiValid = false;
+        window.tempFotoWajahAdmin = null;
+        window.streamAdminCam = null;
 
-        // FUNGSI DINAMIS TAMBAH INPUT LOKASI / MULTI-TEMPAT
-        function tambahInputLokasi() {
+        // LOAD REALTIME DATA DARI FIREBASE
+        onValue(ref(db, "dataLaporan"), (snapshot) => {
+            const data = snapshot.val();
+            window.dataLaporan = [];
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    window.dataLaporan.push(data[key]);
+                });
+            }
+            if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
+                renderDasborAdmin();
+            }
+        });
+
+        onValue(ref(db, "dataAbsensi"), (snapshot) => {
+            const data = snapshot.val();
+            window.dataAbsensi = [];
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    window.dataAbsensi.push(data[key]);
+                });
+            }
+            if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
+                renderDasborAdmin();
+            }
+        });
+
+        onValue(ref(db, "dataKaryawan"), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                window.databaseKaryawan = [];
+                Object.keys(data).forEach((key) => {
+                    window.databaseKaryawan.push(data[key]);
+                });
+                renderTabelKaryawan();
+            }
+        });
+
+        // EKSPOSTING FUNGSI KE WINDOW SUPAYA BISA DIPANGGIL DARI ONCLICK
+        window.tambahInputLokasi = function() {
             const container = document.getElementById('container-lokasi-list');
             const itemCounts = container.children.length + 1;
             
@@ -604,38 +654,38 @@
             container.appendChild(div);
         }
 
-        function reorderLokasiNumber() {
+        window.reorderLokasiNumber = function() {
             const container = document.getElementById('container-lokasi-list');
             Array.from(container.children).forEach((child, index) => {
                 child.querySelector('span').innerText = (index + 1) + ".";
             });
         }
 
-        function simpanPengaturanJam() {
-            pengaturanJamAbsen.masukMulai = document.getElementById('set-jam-masuk-mulai').value;
-            pengaturanJamAbsen.masukAkhir = document.getElementById('set-jam-masuk-akhir').value;
-            pengaturanJamAbsen.pulangMulai = document.getElementById('set-jam-pulang-mulai').value;
-            pengaturanJamAbsen.pulangAkhir = document.getElementById('set-jam-pulang-akhir').value;
+        window.simpanPengaturanJam = function() {
+            window.pengaturanJamAbsen.masukMulai = document.getElementById('set-jam-masuk-mulai').value;
+            window.pengaturanJamAbsen.masukAkhir = document.getElementById('set-jam-masuk-akhir').value;
+            window.pengaturanJamAbsen.pulangMulai = document.getElementById('set-jam-pulang-mulai').value;
+            window.pengaturanJamAbsen.pulangAkhir = document.getElementById('set-jam-pulang-akhir').value;
 
             alert("Jadwal Jam Masuk & Pulang Berhasil Diperbarui!");
             updateInfoJadwalAbsenDisplay();
         }
 
-        function updateInfoJadwalAbsenDisplay() {
+        window.updateInfoJadwalAbsenDisplay = function() {
             const info = document.getElementById('info-jadwal-absen');
             if (info) {
-                info.innerText = `Jadwal Masuk: ${pengaturanJamAbsen.masukMulai} - ${pengaturanJamAbsen.masukAkhir} | Jadwal Pulang: ${pengaturanJamAbsen.pulangMulai} - ${pengaturanJamAbsen.pulangAkhir}`;
+                info.innerText = `Jadwal Masuk: ${window.pengaturanJamAbsen.masukMulai} - ${window.pengaturanJamAbsen.masukAkhir} | Jadwal Pulang: ${window.pengaturanJamAbsen.pulangMulai} - ${window.pengaturanJamAbsen.pulangAkhir}`;
             }
         }
 
-        function mintaAksesGantiLogo() {
+        window.mintaAksesGantiLogo = function() {
             document.getElementById('input-pass-logo').value = '';
             document.getElementById('form-auth-logo').classList.remove('hidden');
             document.getElementById('form-upload-logo').classList.add('hidden');
             document.getElementById('modal-ganti-logo').classList.remove('hidden');
         }
 
-        function verifikasiPasswordLogo() {
+        window.verifikasiPasswordLogo = function() {
             const pwd = document.getElementById('input-pass-logo').value;
             if (pwd === "logo@1234#") {
                 document.getElementById('form-auth-logo').classList.add('hidden');
@@ -645,7 +695,7 @@
             }
         }
 
-        function simpanLogoBaru() {
+        window.simpanLogoBaru = function() {
             const input = document.getElementById('file-logo-baru');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -670,23 +720,23 @@
             }
         }
 
-        function tutupModalLogo() {
+        window.tutupModalLogo = function() {
             document.getElementById('modal-ganti-logo').classList.add('hidden');
         }
 
-        function bukaModalAdmin() {
+        window.bukaModalAdmin = function() {
             const pass = prompt("Masukkan Kode Unik Admin:");
             if (pass === "@dmin@1234#") {
-                currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
+                window.currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
                 document.getElementById('splash-screen').classList.add('hidden');
                 const adminSec = document.getElementById('dasbor-admin-section');
                 adminSec.classList.remove('hidden');
                 document.getElementById('user-display').innerText = "Admin GRAND EL HAJJ";
                 
-                document.getElementById('set-jam-masuk-mulai').value = pengaturanJamAbsen.masukMulai;
-                document.getElementById('set-jam-masuk-akhir').value = pengaturanJamAbsen.masukAkhir;
-                document.getElementById('set-jam-pulang-mulai').value = pengaturanJamAbsen.pulangMulai;
-                document.getElementById('set-jam-pulang-akhir').value = pengaturanJamAbsen.pulangAkhir;
+                document.getElementById('set-jam-masuk-mulai').value = window.pengaturanJamAbsen.masukMulai;
+                document.getElementById('set-jam-masuk-akhir').value = window.pengaturanJamAbsen.masukAkhir;
+                document.getElementById('set-jam-pulang-mulai').value = window.pengaturanJamAbsen.pulangMulai;
+                document.getElementById('set-jam-pulang-akhir').value = window.pengaturanJamAbsen.pulangAkhir;
 
                 renderDasborAdmin();
                 adminSec.scrollIntoView({ behavior: 'smooth' });
@@ -695,16 +745,16 @@
             }
         }
 
-        function nyalakanKameraAdmin() {
+        window.nyalakanKameraAdmin = function() {
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
-                    streamAdminCam = stream;
+                    window.streamAdminCam = stream;
                     document.getElementById('admin-webcam').srcObject = stream;
                 })
                 .catch(err => alert("Gagal mengakses kamera admin!"));
         }
 
-        function ambilFotoWajahAdmin() {
+        window.ambilFotoWajahAdmin = function() {
             const video = document.getElementById('admin-webcam');
             const canvas = document.getElementById('admin-canvas-wajah');
             const imgPrev = document.getElementById('admin-prev-wajah');
@@ -713,35 +763,35 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            tempFotoWajahAdmin = canvas.toDataURL('image/png');
-            imgPrev.src = tempFotoWajahAdmin;
+            window.tempFotoWajahAdmin = canvas.toDataURL('image/png');
+            imgPrev.src = window.tempFotoWajahAdmin;
             imgPrev.classList.remove('hidden');
             
             document.getElementById('admin-status-wajah').innerText = "✓ Sampel Foto Verifikasi Wajah Berhasil Diambil!";
             document.getElementById('admin-status-wajah').className = "text-xs text-emerald-600 font-bold";
         }
 
-        function previewImg(input, targetId) {
+        window.previewImg = function(input, targetId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = document.getElementById(targetId);
                     img.src = e.target.result;
                     img.classList.remove('hidden');
-                    if (targetId === 'prev-before') tempFotoBefore = e.target.result;
-                    if (targetId === 'prev-after') tempFotoAfter = e.target.result;
+                    if (targetId === 'prev-before') window.tempFotoBefore = e.target.result;
+                    if (targetId === 'prev-after') window.tempFotoAfter = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function perbesarFoto(url) {
+        window.perbesarFoto = function(url) {
             document.getElementById('img-lightbox').src = url;
             document.getElementById('modal-lightbox').classList.remove('hidden');
         }
 
-        function lihatBiodata(index) {
-            const item = databaseKaryawan[index];
+        window.lihatBiodata = function(index) {
+            const item = window.databaseKaryawan[index];
             document.getElementById('bio-nama').innerText = item.nama;
             document.getElementById('bio-jabatan').innerText = item.jabatan;
             document.getElementById('bio-divisi').innerText = "Divisi: " + item.role;
@@ -752,10 +802,10 @@
             document.getElementById('modal-biodata').classList.remove('hidden');
         }
 
-        function renderTabelKaryawan() {
+        window.renderTabelKaryawan = function() {
             const tbody = document.getElementById('tabel-karyawan-body');
             tbody.innerHTML = '';
-            databaseKaryawan.forEach((item, index) => {
+            window.databaseKaryawan.forEach((item, index) => {
                 const kodeTEK = "TEK" + item.kodeAwal;
                 const kodeCLE = "CLE" + item.kodeAwal;
                 const fotoWajah = item.fotoWajahSample || item.fotoProfil;
@@ -786,7 +836,7 @@
             });
         }
 
-        function tambahKaryawan(e) {
+        window.tambahKaryawan = function(e) {
             e.preventDefault();
             const nama = document.getElementById('add-nama').value.trim();
             const kodeAwal = document.getElementById('add-kode').value.trim();
@@ -796,49 +846,53 @@
             const alamat = document.getElementById('add-alamat').value.trim();
             const fileFoto = document.getElementById('add-fotoprofil').files[0];
 
-            if (!tempFotoWajahAdmin) {
+            if (!window.tempFotoWajahAdmin) {
                 alert("Harap ambil Sampel Foto Verifikasi Wajah via Kamera terlebih dahulu!");
                 return;
             }
 
-            if (databaseKaryawan.some(u => u.kodeAwal === kodeAwal)) {
+            if (window.databaseKaryawan.some(u => u.kodeAwal === kodeAwal)) {
                 alert("Kode Unik Awal sudah digunakan!");
                 return;
             }
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                databaseKaryawan.push({
+                const dataBaru = {
                     nama, kodeAwal, role, jabatan, tglLahir, alamat, 
                     fotoProfil: evt.target.result,
-                    fotoWajahSample: tempFotoWajahAdmin
-                });
-                alert(`Karyawan ${nama} berhasil didaftarkan!`);
+                    fotoWajahSample: window.tempFotoWajahAdmin
+                };
+
+                // SIMPAN KE FIREBASE DATABASE
+                push(ref(db, "dataKaryawan"), dataBaru);
+
+                alert(`Karyawan ${nama} berhasil didaftarkan & tersimpan ke Firebase!`);
                 e.target.reset();
-                tempFotoWajahAdmin = null;
+                window.tempFotoWajahAdmin = null;
                 document.getElementById('admin-prev-wajah').classList.add('hidden');
                 document.getElementById('admin-status-wajah').innerText = "Sampel foto verifikasi wajah belum diambil.";
                 document.getElementById('admin-status-wajah').className = "text-xs text-amber-600 font-semibold";
                 
-                if (streamAdminCam) streamAdminCam.getTracks().forEach(t => t.stop());
-                renderTabelKaryawan();
+                if (window.streamAdminCam) window.streamAdminCam.getTracks().forEach(t => t.stop());
             }
             reader.readAsDataURL(fileFoto);
         }
 
-        function hapusKaryawan(index) {
-            if (confirm(`Apakah Anda yakin ingin menghapus karyawan "${databaseKaryawan[index].nama}"?`)) {
-                databaseKaryawan.splice(index, 1);
+        window.hapusKaryawan = function(index) {
+            if (confirm(`Apakah Anda yakin ingin menghapus karyawan "${window.databaseKaryawan[index].nama}"?`)) {
+                window.databaseKaryawan.splice(index, 1);
+                set(ref(db, "dataKaryawan"), window.databaseKaryawan);
                 renderTabelKaryawan();
             }
         }
 
-        function prosesMasukAwal() {
+        window.prosesMasukAwal = function() {
             const kode = document.getElementById('input-kode-awal').value.trim();
-            const user = databaseKaryawan.find(u => u.kodeAwal === kode);
+            const user = window.databaseKaryawan.find(u => u.kodeAwal === kode);
 
             if (user) {
-                currentUser = user;
+                window.currentUser = user;
                 document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                 document.getElementById('splash-screen').classList.add('hidden');
             } else {
@@ -846,8 +900,8 @@
             }
         }
 
-        function mintaVerifikasiFitur(modul) {
-            targetModulDipilih = modul;
+        window.mintaVerifikasiFitur = function(modul) {
+            window.targetModulDipilih = modul;
             document.getElementById('input-kode-verifikasi').value = '';
             const petunjuk = document.getElementById('modal-petunjuk');
 
@@ -862,28 +916,28 @@
             document.getElementById('modal-verifikasi').classList.remove('hidden');
         }
 
-        function batalVerifikasi() {
+        window.batalVerifikasi = function() {
             document.getElementById('modal-verifikasi').classList.add('hidden');
         }
 
-        function prosesVerifikasiModul() {
+        window.prosesVerifikasiModul = function() {
             const input = document.getElementById('input-kode-verifikasi').value.trim();
             
             if (input === "@dmin@1234#") {
-                currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
+                window.currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
                 document.getElementById('user-display').innerText = "Admin GRAND EL HAJJ";
                 document.getElementById('modal-verifikasi').classList.add('hidden');
-                bukaModulKerja(targetModulDipilih);
+                bukaModulKerja(window.targetModulDipilih);
                 return;
             }
 
-            if (targetModulDipilih === 'ABSENSI') {
-                const user = databaseKaryawan.find(u => 
+            if (window.targetModulDipilih === 'ABSENSI') {
+                const user = window.databaseKaryawan.find(u => 
                     u.kodeAwal === input || ("TEK" + u.kodeAwal) === input || ("CLE" + u.kodeAwal) === input
                 );
 
                 if (user) {
-                    currentUser = user;
+                    window.currentUser = user;
                     document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                     document.getElementById('modal-verifikasi').classList.add('hidden');
                     bukaModulKerja('ABSENSI');
@@ -891,29 +945,29 @@
                     alert("Kode Unik Salah untuk Modul Absensi!");
                 }
             } 
-            else if (targetModulDipilih === 'TEKNISI') {
-                const user = databaseKaryawan.find(u => ("TEK" + u.kodeAwal) === input);
+            else if (window.targetModulDipilih === 'TEKNISI') {
+                const user = window.databaseKaryawan.find(u => ("TEK" + u.kodeAwal) === input);
 
                 if (user) {
-                    currentUser = user;
+                    window.currentUser = user;
                     document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                     document.getElementById('modal-verifikasi').classList.add('hidden');
                     
-                    document.getElementById('main-running-text').innerText = pengumumanKhusus.TEKNISI;
+                    document.getElementById('main-running-text').innerText = window.pengumumanKhusus.TEKNISI;
                     tampilkanNotifTugasPrioritas('TEKNISI');
                 } else {
                     alert("AKSES DITOLAK! Wajib masukkan kode khusus TEK (contoh: TEK001).");
                 }
             } 
-            else if (targetModulDipilih === 'OB') {
-                const user = databaseKaryawan.find(u => ("CLE" + u.kodeAwal) === input);
+            else if (window.targetModulDipilih === 'OB') {
+                const user = window.databaseKaryawan.find(u => ("CLE" + u.kodeAwal) === input);
 
                 if (user) {
-                    currentUser = user;
+                    window.currentUser = user;
                     document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                     document.getElementById('modal-verifikasi').classList.add('hidden');
                     
-                    document.getElementById('main-running-text').innerText = pengumumanKhusus.OB;
+                    document.getElementById('main-running-text').innerText = window.pengumumanKhusus.OB;
                     tampilkanNotifTugasPrioritas('OB');
                 } else {
                     alert("AKSES DITOLAK! Wajib masukkan kode khusus CLE (contoh: CLE001).");
@@ -921,24 +975,24 @@
             }
         }
 
-        function tampilkanNotifTugasPrioritas(modul) {
-            document.getElementById('notif-tugas-isi').innerText = pengumumanKhusus[modul];
+        window.tampilkanNotifTugasPrioritas = function(modul) {
+            document.getElementById('notif-tugas-isi').innerText = window.pengumumanKhusus[modul];
             document.getElementById('modal-notifikasi-tugas').classList.remove('hidden');
         }
 
-        function tutupNotifTugas() {
+        window.tutupNotifTugas = function() {
             document.getElementById('modal-notifikasi-tugas').classList.add('hidden');
-            bukaModulKerja(targetModulDipilih);
+            bukaModulKerja(window.targetModulDipilih);
         }
 
-        function bukaModulKerja(modul) {
+        window.bukaModulKerja = function(modul) {
             const container = document.getElementById('modul-container');
             const title = document.getElementById('modul-title');
             const secAbsen = document.getElementById('section-absensi-khusus');
             const fieldLaporan = document.getElementById('field-laporan-pekerjaan');
             
             document.getElementById('form-jenis-laporan').value = modul;
-            document.getElementById('form-nama-karyawan').value = currentUser ? currentUser.nama : "Karyawan";
+            document.getElementById('form-nama-karyawan').value = window.currentUser ? window.currentUser.nama : "Karyawan";
             
             const skrg = new Date();
             document.getElementById('form-waktu').value = skrg.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + " | " + skrg.toLocaleTimeString('id-ID');
@@ -963,9 +1017,9 @@
         }
 
         let streamKamera = null;
-        function nyalakanKamera() {
-            fotoWajahTerambil = false;
-            fotoWajahTerambilData = null;
+        window.nyalakanKamera = function() {
+            window.fotoWajahTerambil = false;
+            window.fotoWajahTerambilData = null;
             document.getElementById('status-wajah').innerText = "Foto belum diambil";
             document.getElementById('status-wajah').className = "text-xs text-amber-600 mt-1 font-semibold";
             
@@ -979,24 +1033,24 @@
                 });
         }
 
-        function matikanKamera() {
+        window.matikanKamera = function() {
             if (streamKamera) streamKamera.getTracks().forEach(track => track.stop());
         }
 
-        function ambilFotoWajah() {
+        window.ambilFotoWajah = function() {
             const video = document.getElementById('webcam');
             const canvas = document.getElementById('canvas-wajah');
             canvas.width = video.videoWidth || 300;
             canvas.height = video.videoHeight || 200;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            fotoWajahTerambilData = canvas.toDataURL('image/png');
-            fotoWajahTerambil = true;
+            window.fotoWajahTerambilData = canvas.toDataURL('image/png');
+            window.fotoWajahTerambil = true;
             document.getElementById('status-wajah').innerText = "✓ Foto Wajah Berhasil Terverifikasi!";
             document.getElementById('status-wajah').className = "text-xs text-emerald-600 mt-1 font-bold";
         }
 
-        function cekLokasiGPS() {
+        window.cekLokasiGPS = function() {
             const statusLoc = document.getElementById('status-lokasi');
             statusLoc.innerText = "Mengecek lokasi...";
 
@@ -1007,16 +1061,16 @@
                     const jarak = hitungJarakKm(lat, lng, HOTEL_LAT, HOTEL_LNG);
 
                     if (jarak <= RADIUS_MAKSIMAL_KM) {
-                        lokasiValid = true;
+                        window.lokasiValid = true;
                         statusLoc.innerText = `✓ Terdeteksi di Area GRAND EL HAJJ (${Math.round(jarak*1000)}m)`;
                         statusLoc.className = "text-xs text-emerald-600 font-bold";
                     } else {
-                        lokasiValid = false;
+                        window.lokasiValid = false;
                         statusLoc.innerText = `✕ Di luar Area GRAND EL HAJJ (${jarak.toFixed(2)}km)`;
                         statusLoc.className = "text-xs text-red-600 font-bold";
                     }
                 }, () => {
-                    lokasiValid = true;
+                    window.lokasiValid = true;
                     statusLoc.innerText = "✓ Lokasi Terverifikasi (Area GRAND EL HAJJ)";
                     statusLoc.className = "text-xs text-emerald-600 font-bold";
                 });
@@ -1033,13 +1087,13 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        function tutupModul() {
+        window.tutupModul = function() {
             matikanKamera();
             document.getElementById('modul-container').classList.add('hidden');
         }
 
-        // SIMPAN LAPORAN DENGAN INTEGRASI LOKASI JAMAK & CEKLIS TERKIRIM
-        function simpanLaporan(e) {
+        // SIMPAN DATA KE FIREBASE REALTIME DATABASE
+        window.simpanLaporan = function(e) {
             e.preventDefault();
             const modul = document.getElementById('form-jenis-laporan').value;
             const nama = document.getElementById('form-nama-karyawan').value;
@@ -1047,7 +1101,7 @@
             const jamStr = String(skrg.getHours()).padStart(2, '0') + ":" + String(skrg.getMinutes()).padStart(2, '0');
 
             if (modul === 'ABSENSI') {
-                if (!fotoWajahTerambil || !lokasiValid) {
+                if (!window.fotoWajahTerambil || !window.lokasiValid) {
                     alert("Verifikasi Wajah dan Lokasi GPS Wajib Dilakukan!");
                     return;
                 }
@@ -1056,33 +1110,33 @@
                 let statusKet = "Tepat Waktu";
 
                 if (tipeAbsen === 'MASUK') {
-                    if (jamStr < pengaturanJamAbsen.masukMulai) {
+                    if (jamStr < window.pengaturanJamAbsen.masukMulai) {
                         statusKet = "Terlalu Awal";
-                    } else if (jamStr > pengaturanJamAbsen.masukAkhir) {
+                    } else if (jamStr > window.pengaturanJamAbsen.masukAkhir) {
                         statusKet = "Terlambat";
                     }
                 } else if (tipeAbsen === 'PULANG') {
-                    if (jamStr < pengaturanJamAbsen.pulangMulai) {
+                    if (jamStr < window.pengaturanJamAbsen.pulangMulai) {
                         statusKet = "Pulang Cepat";
-                    } else if (jamStr > pengaturanJamAbsen.pulangAkhir) {
+                    } else if (jamStr > window.pengaturanJamAbsen.pulangAkhir) {
                         statusKet = "Di Luar Jadwal";
                     }
                 }
 
-                dataAbsensi.push({
+                // SIMPAN ABSENSI KE FIREBASE
+                push(ref(db, "dataAbsensi"), {
                     waktu: skrg.toLocaleString('id-ID'),
                     nama: nama,
-                    jabatan: currentUser ? (currentUser.jabatan || currentUser.role) : "-",
+                    jabatan: window.currentUser ? (window.currentUser.jabatan || window.currentUser.role) : "-",
                     tipe: tipeAbsen,
                     statusWaktu: statusKet,
-                    fotoWajah: fotoWajahTerambilData
+                    fotoWajah: window.fotoWajahTerambilData
                 });
 
-                alert(`Absensi ${tipeAbsen} Berhasil Disimpan! Status: ${statusKet}`);
+                alert(`Absensi ${tipeAbsen} Berhasil Disimpan ke Database! Status: ${statusKet}`);
             } else {
                 const ket = document.getElementById('form-keterangan').value;
                 
-                // KUMPULKAN MULTI LOKASI
                 const inputLokasiElements = document.getElementsByName('input-lokasi-item');
                 let listLokasiArray = [];
                 for (let el of inputLokasiElements) {
@@ -1096,12 +1150,13 @@
                     return;
                 }
 
-                if (!tempFotoBefore || !tempFotoAfter) {
+                if (!window.tempFotoBefore || !window.tempFotoAfter) {
                     alert("Wajib melampirkan Foto Sebelum (Before) DAN Foto Sesudah (After)!");
                     return;
                 }
 
-                dataLaporan.push({
+                // SIMPAN LAPORAN KE FIREBASE
+                push(ref(db, "dataLaporan"), {
                     tanggalJam: skrg.toLocaleString('id-ID'),
                     tanggalOnly: skrg.toLocaleDateString('id-ID'),
                     waktuOnly: skrg.toLocaleTimeString('id-ID'),
@@ -1110,18 +1165,17 @@
                     lokasiArray: listLokasiArray,
                     keterangan: ket,
                     statusCeklis: "[v] Terkirim & Selesai",
-                    fotoBefore: tempFotoBefore,
-                    fotoAfter: tempFotoAfter
+                    fotoBefore: window.tempFotoBefore,
+                    fotoAfter: window.tempFotoAfter
                 });
 
-                alert(`Laporan Modul ${modul} Berhasil Disimpan & Diterima! [v]`);
+                alert(`Laporan Modul ${modul} Berhasil Disimpan ke Database! [v]`);
             }
 
             document.getElementById('form-laporan').reset();
             document.getElementById('prev-before').classList.add('hidden');
             document.getElementById('prev-after').classList.add('hidden');
             
-            // RESET CONTAINER LOKASI BACK TO 1 FIELD
             document.getElementById('container-lokasi-list').innerHTML = `
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-indigo-700 w-5">1.</span>
@@ -1129,8 +1183,8 @@
                 </div>
             `;
 
-            tempFotoBefore = null;
-            tempFotoAfter = null;
+            window.tempFotoBefore = null;
+            window.tempFotoAfter = null;
             tutupModul();
 
             if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
@@ -1138,15 +1192,13 @@
             }
         }
 
-        // RENDER DATA DI DASBOR ADMIN
-        function renderDasborAdmin() {
+        window.renderDasborAdmin = function() {
             renderTabelKaryawan();
             
-            // 1. RENDER TABEL ABSENSI
             const tbodyAbsen = document.getElementById('tabel-absensi-body');
             tbodyAbsen.innerHTML = '';
 
-            dataAbsensi.forEach(item => {
+            window.dataAbsensi.forEach(item => {
                 let badgeStatus = 'bg-emerald-100 text-emerald-800 border-emerald-300';
                 if (item.statusWaktu === 'Terlambat' || item.statusWaktu === 'Di Luar Jadwal') {
                     badgeStatus = 'bg-red-100 text-red-800 border-red-300';
@@ -1178,21 +1230,20 @@
                 `;
             });
 
-            // 2. RENDER TABEL LAPORAN PEKERJAAN BEFORE/AFTER & MULTI LOKASI
             const tbodyLaporan = document.getElementById('tabel-laporan-body');
             tbodyLaporan.innerHTML = '';
-            let cntAbsen = dataAbsensi.length, cntTeknisi = 0, cntOB = 0;
+            let cntAbsen = window.dataAbsensi.length, cntTeknisi = 0, cntOB = 0;
 
-            dataLaporan.forEach(item => {
+            window.dataLaporan.forEach(item => {
                 if (item.modul === 'TEKNISI') cntTeknisi++;
                 if (item.modul === 'OB') cntOB++;
 
-                const displayLokasi = item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('<br>');
+                const displayLokasi = item.lokasiArray ? item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('<br>') : '-';
 
-                const imgBeforeHtml = item.fotoBefore !== '-' 
+                const imgBeforeHtml = (item.fotoBefore && item.fotoBefore !== '-') 
                     ? `<img src="${item.fotoBefore}" onclick="perbesarFoto('${item.fotoBefore}')" class="h-12 w-12 object-cover rounded mx-auto cursor-pointer border">`
                     : '-';
-                const imgAfterHtml = item.fotoAfter !== '-' 
+                const imgAfterHtml = (item.fotoAfter && item.fotoAfter !== '-') 
                     ? `<img src="${item.fotoAfter}" onclick="perbesarFoto('${item.fotoAfter}')" class="h-12 w-12 object-cover rounded mx-auto cursor-pointer border">`
                     : '-';
 
@@ -1214,7 +1265,6 @@
                 `;
             });
 
-            // CHART STATISTIK
             const ctxB = document.getElementById('chartBatang').getContext('2d');
             if (window.chartB) window.chartB.destroy();
             window.chartB = new Chart(ctxB, {
@@ -1224,9 +1274,8 @@
             });
         }
 
-        // EKSPOR LAPORAN KHUSUS PER DIVISI (TEKNISI / OB) KE EXCEL
-        function exportLaporanDivisiKeExcel(targetDivisi) {
-            const dataFiltered = dataLaporan.filter(item => item.modul === targetDivisi);
+        window.exportLaporanDivisiKeExcel = function(targetDivisi) {
+            const dataFiltered = window.dataLaporan.filter(item => item.modul === targetDivisi);
 
             if (dataFiltered.length === 0) {
                 alert(`Belum ada data laporan untuk Divisi ${targetDivisi}!`);
@@ -1234,8 +1283,8 @@
             }
 
             const excelData = dataFiltered.map((item, index) => {
-                const totalTempat = item.lokasiArray.length + " Tempat";
-                const detailTempatFormatted = item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('; ');
+                const totalTempat = item.lokasiArray ? item.lokasiArray.length + " Tempat" : "1 Tempat";
+                const detailTempatFormatted = item.lokasiArray ? item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('; ') : '-';
 
                 return {
                     "NO": index + 1,
@@ -1257,14 +1306,13 @@
             XLSX.writeFile(workbook, `Laporan_${targetDivisi}_GRAND_EL_HAJJ.xlsx`);
         }
 
-        // EKSPOR KHUSUS DATA ABSENSI KE EXCEL
-        function exportAbsensiKeExcel() {
-            if (dataAbsensi.length === 0) {
+        window.exportAbsensiKeExcel = function() {
+            if (window.dataAbsensi.length === 0) {
                 alert("Belum ada data absensi untuk diekspor!");
                 return;
             }
 
-            const excelData = dataAbsensi.map((item, index) => ({
+            const excelData = window.dataAbsensi.map((item, index) => ({
                 "NO": index + 1,
                 "WAKTU_TRANSAKSI": item.waktu,
                 "NAMA_KARYAWAN": item.nama,
@@ -1279,20 +1327,19 @@
             XLSX.writeFile(workbook, `Rekap_Absensi_GRAND_EL_HAJJ.xlsx`);
         }
 
-        // EKSPOR SEMUA LAPORAN PEKERJAAN KE EXCEL
-        function exportKeExcel() {
-            if (dataLaporan.length === 0) {
+        window.exportKeExcel = function() {
+            if (window.dataLaporan.length === 0) {
                 alert("Belum ada laporan pekerjaan yang masuk!");
                 return;
             }
 
-            const excelData = dataLaporan.map((item, index) => ({
+            const excelData = window.dataLaporan.map((item, index) => ({
                 "NO": index + 1,
                 "WAKTU_INPUT": item.tanggalJam,
                 "NAMA_KARYAWAN": item.nama,
                 "DIVISI": item.modul,
-                "JUMLAH_LOKASI": item.lokasiArray.length + " Tempat",
-                "DETAIL_LOKASI": item.lokasiArray.join('; '),
+                "JUMLAH_LOKASI": item.lokasiArray ? item.lokasiArray.length + " Tempat" : "1 Tempat",
+                "DETAIL_LOKASI": item.lokasiArray ? item.lokasiArray.join('; ') : '-',
                 "KETERANGAN_PEKERJAAN": item.keterangan,
                 "STATUS_CEKLIS": item.statusCeklis
             }));
@@ -1303,20 +1350,20 @@
             XLSX.writeFile(workbook, `Laporan_Keseluruhan_GRAND_EL_HAJJ.xlsx`);
         }
 
-        function ubahRunningText() {
+        window.ubahRunningText = function() {
             const target = document.getElementById('admin-target-divisi').value;
             const teks = document.getElementById('admin-running-text').value.trim();
             if (teks) {
-                pengumumanKhusus[target] = teks;
+                window.pengumumanKhusus[target] = teks;
                 alert(`Pengumuman khusus divisi ${target} berhasil diperbarui!`);
                 document.getElementById('admin-running-text').value = '';
             }
         }
 
-        function keluarAplikasi() {
-            currentUser = null;
+        window.keluarAplikasi = function() {
+            window.currentUser = null;
             matikanKamera();
-            if (streamAdminCam) streamAdminCam.getTracks().forEach(t => t.stop());
+            if (window.streamAdminCam) window.streamAdminCam.getTracks().forEach(t => t.stop());
             document.getElementById('input-kode-awal').value = '';
             document.getElementById('dasbor-admin-section').classList.add('hidden');
             tutupModul();
