@@ -3,120 +3,527 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grand El Hajj - Sistem Integrasi Operasional</title>
-    <!-- Tailwind CSS CDN -->
+    <title>SuperApp Operasional - GRAND EL HAJJ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #0f172a;
+        .bg-hotel {
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            transition: background-image 0.3s ease-in-out;
+            transition: background-image 0.5s ease-in-out;
         }
     </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col justify-between p-4">
+<body class="bg-gray-100 font-sans antialiased text-gray-800 min-h-screen">
 
-    <!-- HEADER / LOGO & ADMIN BUTTON -->
-    <header class="flex justify-between items-center max-w-6xl mx-auto w-full mb-6">
-        <div class="flex items-center space-x-3">
-            <img id="app-logo" src="logo.png" alt="Logo" class="h-12 w-12 object-contain bg-white/20 p-1 rounded-xl backdrop-blur-md border border-white/30" onerror="this.src='https://via.placeholder.com/48?text=Logo'">
-            <div>
-                <h1 class="text-xl font-bold text-white tracking-wide">GRAND EL HAJJ</h1>
-                <p class="text-xs text-slate-300">Sistem Integrasi Operasional</p>
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen" class="bg-hotel fixed inset-0 flex flex-col items-center justify-center p-4 z-50 text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200');">
+        <div class="absolute top-4 right-4">
+            <button onclick="bukaModalAdmin()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-bold shadow-lg transition flex items-center">
+                <i class="fa-solid fa-user-shield mr-1.5"></i> Menu Admin
+            </button>
+        </div>
+
+        <div class="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 max-w-md w-full shadow-2xl flex flex-col items-center">
+            <div id="logo-container-splash" class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-4 shadow-lg overflow-hidden border-2 border-white">
+                <i id="icon-default-splash" class="fa-solid fa-hotel text-3xl text-white"></i>
+                <img id="img-logo-splash" class="w-full h-full object-cover hidden" alt="Logo Perusahaan">
+            </div>
+            
+            <h1 class="text-2xl font-black mb-1 tracking-wider text-amber-300">GRAND EL HAJJ</h1>
+            <p class="text-xs text-blue-200 mb-6 font-semibold uppercase tracking-widest">Sistem Integrasi Operasional</p>
+
+            <div class="mb-6 space-y-1">
+                <p class="text-2xl font-serif text-blue-100">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+                <p class="text-xs italic text-gray-200">"Awali pekerjaanmu dengan doa agar bernilai ibadah."</p>
+            </div>
+
+            <div class="w-full space-y-3">
+                <input type="password" id="input-kode-awal" placeholder="Masukkan Kode Unik (misal: 001)" class="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 text-center text-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button onclick="prosesMasukAwal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition">
+                    MASUK KE SYSTEM
+                </button>
             </div>
         </div>
-        <button onclick="bukaModalAdmin()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-xl shadow-lg transition flex items-center">
-            <i class="fa-solid fa-user-shield mr-2"></i> Menu Admin
-        </button>
-    </header>
+    </div>
 
-    <!-- CONTENT UTAMA -->
-    <main class="max-w-4xl mx-auto w-full bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/40 mb-8">
-        
-        <!-- PANEL TAMPILAN ADMIN (DISEMBUNYIKAN SECARA DEFAULT) -->
-        <div id="panel-admin" class="hidden space-y-6 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h2 class="text-lg font-bold text-slate-800 flex items-center">
-                    <i class="fa-solid fa-sliders text-indigo-600 mr-2"></i> Panel Kontrol Admin
-                </h2>
-                <button onclick="tutupModalAdmin()" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+    <!-- NAVBAR -->
+    <nav class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div id="logo-container-nav" class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center overflow-hidden">
+                    <i id="icon-default-nav" class="fa-solid fa-hotel text-white text-sm"></i>
+                    <img id="img-logo-nav" class="w-full h-full object-cover hidden" alt="Logo">
+                </div>
+                <span class="font-bold tracking-wider text-amber-400">GRAND EL HAJJ</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span id="user-display" class="text-xs bg-slate-800 px-3 py-1 rounded-full text-blue-300 border border-slate-700">Tamu</span>
+                <button onclick="bukaModalAdmin()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <i class="fa-solid fa-user-shield mr-1"></i> Admin
+                </button>
+                <button onclick="keluarAplikasi()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
             </div>
+        </div>
+    </nav>
 
-            <!-- TOMBOL-TOMBOL PENGATURAN -->
-            <div class="flex flex-wrap gap-3">
-                <button onclick="mintaAksesGantiLogo()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow transition">
-                    <i class="fa-solid fa-image mr-1.5"></i> Ganti Logo
-                </button>
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+
+        <!-- RUNNING TEXT PENGUMUMAN UTAMA -->
+        <div class="bg-blue-600 text-white px-4 py-2.5 rounded-xl shadow-lg border border-blue-400 mb-6 flex items-center gap-3">
+            <span class="bg-slate-900 text-blue-300 text-xs font-bold px-3 py-1 rounded-md shrink-0 uppercase tracking-wider border border-blue-500/30">
+                <i class="fa-solid fa-bullhorn mr-1.5 text-blue-400"></i> Pengumuman:
+            </span>
+            <marquee id="main-running-text" class="text-xs font-bold tracking-wide text-white">Selamat datang di Sistem Operasional Hotel GRAND EL HAJJ. Pilih modul untuk melihat tugas divisi Anda.</marquee>
+        </div>
+
+        <!-- PILIHAN MODUL -->
+        <div id="menu-utama-section" class="mb-8">
+            <h2 class="text-lg font-bold mb-4 text-gray-700 flex items-center">
+                <i class="fa-solid fa-cubes mr-2 text-indigo-600"></i> Pilih Modul Pekerjaan
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
-                <!-- TOMBOL GANTI BACKDROP BARU -->
-                <button onclick="mintaAksesGantiBackdrop()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow transition">
-                    <i class="fa-solid fa-file-image mr-1.5"></i> Ganti Backdrop
-                </button>
+                <div onclick="mintaVerifikasiFitur('ABSENSI')" class="bg-white rounded-xl p-6 shadow-md border hover:shadow-xl transition cursor-pointer">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-3 text-xl">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-800">1. Modul Absensi</h3>
+                    <p class="text-xs text-gray-500 mt-1">Presensi wajah, lokasi GPS, & jam kerja harian.</p>
+                </div>
 
-                <button onclick="exportKeExcel()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow transition">
-                    <i class="fa-solid fa-file-excel mr-1.5 text-emerald-400"></i> Export Excel
-                </button>
+                <div onclick="mintaVerifikasiFitur('TEKNISI')" class="bg-white rounded-xl p-6 shadow-md border hover:shadow-xl transition cursor-pointer">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 mb-3 text-xl">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-800">2. Modul Teknisi</h3>
+                    <p class="text-xs text-gray-500 mt-1">Laporan Before/After & Multi-Lokasi (Kode TEK...)</p>
+                </div>
+
+                <div onclick="mintaVerifikasiFitur('OB')" class="bg-white rounded-xl p-6 shadow-md border hover:shadow-xl transition cursor-pointer">
+                    <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 mb-3 text-xl">
+                        <i class="fa-solid fa-broom"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-800">3. Modul OB / CS</h3>
+                    <p class="text-xs text-gray-500 mt-1">Checklist Kebersihan & Multi-Area (Kode CLE...)</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FORM MODUL INPUT LAPORAN / ABSENSI -->
+        <div id="modul-container" class="hidden bg-white rounded-xl shadow-lg border overflow-hidden mb-8">
+            <div class="bg-slate-800 text-white p-4">
+                <div class="flex justify-between items-center">
+                    <h3 id="modul-title" class="font-bold text-blue-400">MODUL LAPORAN</h3>
+                    <button onclick="tutupModul()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
             </div>
 
-            <!-- INPUT FILE TERSEMBUNYI -->
-            <input type="file" id="input-logo-file" accept="image/*" class="hidden" onchange="prosesGantiLogo(event)">
-            <input type="file" id="input-backdrop-file" accept="image/*" class="hidden" onchange="prosesGantiBackdrop(event)">
+            <form id="form-laporan" onsubmit="simpanLaporan(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-jenis-laporan">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Nama Karyawan</label>
+                        <input type="text" id="form-nama-karyawan" readonly class="w-full bg-gray-100 border rounded-lg p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Tanggal & Waktu Realtime</label>
+                        <input type="text" id="form-waktu" readonly class="w-full bg-gray-100 border rounded-lg p-2.5 text-sm font-mono">
+                    </div>
+                </div>
+
+                <!-- SECTION KHUSUS ABSENSI -->
+                <div id="section-absensi-khusus" class="hidden space-y-4 bg-slate-50 p-4 rounded-xl border">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Tipe Absensi</label>
+                        <select id="form-tipe-absensi" class="w-full border rounded-lg p-2 text-xs font-bold text-slate-700">
+                            <option value="MASUK">Absen Masuk</option>
+                            <option value="PULANG">Absen Pulang</option>
+                        </select>
+                        <p id="info-jadwal-absen" class="text-[11px] text-indigo-600 font-semibold mt-1"></p>
+                    </div>
+
+                    <!-- KAMERA VERIFIKASI WAJAH -->
+                    <div class="text-center border p-3 rounded-lg bg-white">
+                        <label class="block text-xs font-semibold mb-2">Verifikasi Wajah Live</label>
+                        <video id="webcam" autoplay playsinline class="w-full max-w-xs h-40 bg-black rounded-lg mx-auto object-cover mb-2"></video>
+                        <canvas id="canvas-wajah" class="hidden"></canvas>
+                        <button type="button" onclick="ambilFotoWajah()" class="bg-indigo-600 text-white px-3 py-1.5 rounded text-xs font-bold">
+                            <i class="fa-solid fa-camera mr-1"></i> Ambil Foto Wajah
+                        </button>
+                        <p id="status-wajah" class="text-xs text-amber-600 mt-1 font-semibold">Foto belum diambil</p>
+                    </div>
+
+                    <!-- GEOLOCATION -->
+                    <div class="border p-3 rounded-lg bg-white">
+                        <label class="block text-xs font-semibold mb-1">Deteksi Lokasi GPS</label>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="cekLokasiGPS()" class="bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-bold">
+                                <i class="fa-solid fa-location-dot mr-1"></i> Cek Lokasi Hotel GRAND EL HAJJ
+                            </button>
+                            <span id="status-lokasi" class="text-xs text-gray-500 italic">Belum diperiksa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION KETERANGAN & LOKASI PEKERJAAN JAMAK -->
+                <div id="field-laporan-pekerjaan" class="space-y-4">
+                    <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-xs font-bold text-indigo-900">
+                                <i class="fa-solid fa-map-pin mr-1 text-indigo-600"></i> Area / Unit Pekerjaan (Bisa >1 Tempat)
+                            </label>
+                            <button type="button" onclick="tambahInputLokasi()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold px-2.5 py-1 rounded shadow">
+                                <i class="fa-solid fa-plus mr-1"></i> Tambah Tempat
+                            </button>
+                        </div>
+                        <div id="container-lokasi-list" class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-indigo-700 w-5">1.</span>
+                                <input type="text" name="input-lokasi-item" placeholder="Contoh: Lt. 2 Room 204" required class="w-full border rounded-lg p-2 text-xs bg-white focus:ring-2 focus:ring-indigo-400 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Detail Pekerjaan / Perbaikan / Catatan</label>
+                        <textarea id="form-keterangan" rows="3" placeholder="Tuliskan keterangan pekerjaan secara rinci..." class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50/50 p-4 rounded-xl border border-blue-200">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-900 mb-1">
+                                <i class="fa-solid fa-image text-red-500 mr-1"></i> Foto SEBELUM (Before)
+                            </label>
+                            <input type="file" id="form-foto-before" accept="image/*" onchange="previewImg(this, 'prev-before')" class="w-full border p-2 rounded-lg text-xs bg-white">
+                            <img id="prev-before" class="hidden mt-2 h-32 w-full object-cover rounded-lg border">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-900 mb-1">
+                                <i class="fa-solid fa-image text-emerald-500 mr-1"></i> Foto SESUDAH (After)
+                            </label>
+                            <input type="file" id="form-foto-after" accept="image/*" onchange="previewImg(this, 'prev-after')" class="w-full border p-2 rounded-lg text-xs bg-white">
+                            <img id="prev-after" class="hidden mt-2 h-32 w-full object-cover rounded-lg border">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-lg">
+                    SUBMIT / SIMPAN DATA LAPORAN
+                </button>
+            </form>
+        </div>
+
+        <!-- DASBOR ADMIN -->
+        <div id="dasbor-admin-section" class="hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 gap-3">
+                <h2 class="text-xl font-bold text-slate-800">Dasbor Utama Admin - GRAND EL HAJJ</h2>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="mintaAksesGantiLogo()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
+                        <i class="fa-solid fa-image mr-1.5"></i> Ganti Logo
+                    </button>
+                    <button onclick="exportKeExcel()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
+                        <i class="fa-solid fa-file-excel mr-1.5 text-emerald-400"></i> Export Semua Laporan
+                    </button>
+                </div>
+            </div>
 
             <!-- MODUL ADMIN: ATUR JADWAL JAM ABSENSI -->
             <div class="bg-white p-5 rounded-xl shadow border border-indigo-200">
                 <h3 class="text-sm font-bold text-indigo-900 mb-3 flex items-center">
-                    <i class="fa-solid fa-clock mr-2 text-indigo-600"></i> Pengaturan Jam Absensi
+                    <i class="fa-solid fa-clock mr-2 text-indigo-600"></i> Pengaturan Jam Absensi Karyawan
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-indigo-50/50 p-4 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Masuk Mulai</label>
-                        <input type="time" id="set-jam-masuk-mulai" value="06:00" class="w-full text-xs p-2 rounded border border-slate-300">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Jam Masuk (Mulai)</label>
+                        <input type="time" id="set-jam-masuk-mulai" value="06:00" class="w-full border rounded-lg p-2 text-xs bg-white font-mono">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Masuk Akhir</label>
-                        <input type="time" id="set-jam-masuk-akhir" value="09:00" class="w-full text-xs p-2 rounded border border-slate-300">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Jam Masuk (Batas Akhir)</label>
+                        <input type="time" id="set-jam-masuk-akhir" value="09:00" class="w-full border rounded-lg p-2 text-xs bg-white font-mono">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Pulang Mulai</label>
-                        <input type="time" id="set-jam-pulang-mulai" value="16:00" class="w-full text-xs p-2 rounded border border-slate-300">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Jam Pulang (Mulai)</label>
+                        <input type="time" id="set-jam-pulang-mulai" value="16:00" class="w-full border rounded-lg p-2 text-xs bg-white font-mono">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Pulang Akhir</label>
-                        <input type="time" id="set-jam-pulang-akhir" value="19:00" class="w-full text-xs p-2 rounded border border-slate-300">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Jam Pulang (Batas Akhir)</label>
+                        <input type="time" id="set-jam-pulang-akhir" value="21:00" class="w-full border rounded-lg p-2 text-xs bg-white font-mono">
                     </div>
                 </div>
-                <button onclick="simpanJadwalAbsen()" class="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-4 rounded-lg transition">
-                    Simpan Jam Absensi
-                </button>
+                <div class="mt-3 text-right">
+                    <button onclick="simpanPengaturanJam()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Jadwal Absen
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- FORM UTAMA APLIKASI -->
-        <div class="text-center py-8">
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">Selamat Datang</h2>
-            <p class="text-sm text-slate-600 mb-6">Silakan masukkan Kode Unik Anda untuk mengakses sistem</p>
-            
-            <div class="max-w-xs mx-auto space-y-4">
-                <input type="text" id="input-kode-unik" placeholder="Masukkan Kode Unik (misal: 001)" class="w-full text-center text-sm p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <button onclick="prosesMasuk()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition">
-                    MASUK KE SYSTEM
-                </button>
+            <!-- REKAPITULASI DATA ABSENSI KARYAWAN -->
+            <div class="bg-white rounded-xl shadow border overflow-hidden">
+                <div class="p-3 bg-blue-900 text-white text-xs font-bold flex justify-between items-center">
+                    <span><i class="fa-solid fa-clipboard-user mr-2"></i> Rekapitulasi Data Absensi Karyawan</span>
+                    <button onclick="exportAbsensiKeExcel()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1 rounded text-[11px] font-bold shadow">
+                        <i class="fa-solid fa-file-excel mr-1"></i> Export Absensi Excel
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-blue-50 border-b text-blue-900">
+                                <th class="p-3">Waktu Transaksi</th>
+                                <th class="p-3">Nama Karyawan</th>
+                                <th class="p-3">Jabatan / Role</th>
+                                <th class="p-3 text-center">Tipe Absen</th>
+                                <th class="p-3 text-center">Status Waktu</th>
+                                <th class="p-3 text-center">Foto Wajah</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-absensi-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- EXPORT EXCEL MASING-MASING DIVISI (TEKNISI & OB) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-indigo-900 text-white p-4 rounded-xl shadow flex justify-between items-center border border-indigo-700">
+                    <div>
+                        <h4 class="font-bold text-sm text-indigo-200"><i class="fa-solid fa-screwdriver-wrench mr-2"></i> Laporan Divisi Teknisi</h4>
+                        <p class="text-[11px] text-indigo-300">Rekap pekerjaan maintenance, multi-lokasi & perbaikan.</p>
+                    </div>
+                    <button onclick="exportLaporanDivisiKeExcel('TEKNISI')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-lg shadow flex items-center shrink-0">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i> Export Excel Teknisi
+                    </button>
+                </div>
+
+                <div class="bg-emerald-900 text-white p-4 rounded-xl shadow flex justify-between items-center border border-emerald-700">
+                    <div>
+                        <h4 class="font-bold text-sm text-emerald-200"><i class="fa-solid fa-broom mr-2"></i> Laporan Divisi OB / CS</h4>
+                        <p class="text-[11px] text-emerald-300">Rekap kebersihan area, multi-lokasi & penanganan khusus.</p>
+                    </div>
+                    <button onclick="exportLaporanDivisiKeExcel('OB')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-lg shadow flex items-center shrink-0">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i> Export Excel OB
+                    </button>
+                </div>
+            </div>
+
+            <!-- PENDAFTARAN KARYAWAN LENGKAP -->
+            <div class="bg-white p-5 rounded-xl shadow border space-y-4">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center border-b pb-2">
+                    <i class="fa-solid fa-user-plus mr-2 text-indigo-600"></i> Form Pendaftaran Karyawan Baru & Pendaftaran Wajah
+                </h3>
+                
+                <form onsubmit="tambahKaryawan(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Nama Lengkap</label>
+                        <input type="text" id="add-nama" placeholder="Nama Karyawan" required class="w-full border rounded px-3 py-1.5 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Kode Unik Awal</label>
+                        <input type="text" id="add-kode" placeholder="Misal: 001" required class="w-full border rounded px-3 py-1.5 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Jabatan / Posisi</label>
+                        <input type="text" id="add-jabatan" placeholder="Contoh: Senior Technician" required class="w-full border rounded px-3 py-1.5 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Divisi / Modul</label>
+                        <select id="add-role" class="w-full border rounded px-3 py-1.5 text-xs outline-none">
+                            <option value="Teknisi">Teknisi</option>
+                            <option value="OB">OB / Cleaning Service</option>
+                            <option value="Umum">Umum / Staff</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Tanggal Lahir</label>
+                        <input type="date" id="add-tgllahir" required class="w-full border rounded px-3 py-1.5 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Foto Profil Karyawan</label>
+                        <input type="file" id="add-fotoprofil" accept="image/*" required class="w-full border rounded px-2 py-1 text-xs bg-white">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-semibold mb-1">Alamat Rumah Lengkap</label>
+                        <input type="text" id="add-alamat" placeholder="Jl. Raya Hotel No. 123..." required class="w-full border rounded px-3 py-1.5 text-xs outline-none">
+                    </div>
+
+                    <div class="md:col-span-3 border-t pt-3 mt-2">
+                        <label class="block text-xs font-bold text-blue-800 mb-2">
+                            <i class="fa-solid fa-face-smile mr-1"></i> Registrasi Verifikasi Wajah
+                        </label>
+                        <div class="flex flex-col md:flex-row gap-4 items-center bg-white p-3 rounded-lg border">
+                            <div class="text-center">
+                                <video id="admin-webcam" autoplay playsinline class="w-48 h-36 bg-black rounded-lg object-cover border"></video>
+                                <button type="button" onclick="nyalakanKameraAdmin()" class="bg-slate-700 text-white text-[10px] px-2 py-1 rounded mt-1">Buka Kamera</button>
+                            </div>
+                            <div class="text-center">
+                                <canvas id="admin-canvas-wajah" class="hidden"></canvas>
+                                <img id="admin-prev-wajah" class="w-48 h-36 bg-gray-100 rounded-lg object-cover border hidden">
+                                <button type="button" onclick="ambilFotoWajahAdmin()" class="bg-indigo-600 text-white text-[10px] px-2 py-1 rounded mt-1 font-bold">
+                                    <i class="fa-solid fa-camera mr-1"></i> Ambil Sample Wajah
+                                </button>
+                            </div>
+                            <p id="admin-status-wajah" class="text-xs text-amber-600 font-semibold">Sampel foto verifikasi wajah belum diambil.</p>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-3 text-right">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-xs transition">
+                            <i class="fa-solid fa-save mr-1"></i> Simpan Data Karyawan
+                        </button>
+                    </div>
+                </form>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-200 text-slate-700 border-b">
+                                <th class="p-2">Profil</th>
+                                <th class="p-2">Sampel Wajah</th>
+                                <th class="p-2">Nama Karyawan</th>
+                                <th class="p-2">Kode Unik Awal</th>
+                                <th class="p-2">Kode TEK</th>
+                                <th class="p-2">Kode CLE</th>
+                                <th class="p-2">Jabatan & Biodata</th>
+                                <th class="p-2 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-karyawan-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PENGATURAN RUNNING TEXT -->
+            <div class="bg-white p-4 rounded-xl shadow border border-blue-200">
+                <h3 class="text-xs font-bold text-blue-900 mb-2">Update Pengumuman Pekerjaan Khusus Divisi</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                    <select id="admin-target-divisi" class="border rounded-lg px-3 py-2 text-xs bg-gray-50 font-bold">
+                        <option value="TEKNISI">Khusus Teknisi (TEK)</option>
+                        <option value="OB">Khusus OB / Cleaning (CLE)</option>
+                    </select>
+                    <input type="text" id="admin-running-text" placeholder="Tuliskan pengumuman khusus divisi ini..." class="md:col-span-2 border rounded-lg px-3 py-2 text-xs">
+                    <button onclick="ubahRunningText()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold">Perbarui Pengumuman</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-4 rounded-xl shadow border">
+                    <h3 class="text-xs font-bold text-gray-700 mb-3">Statistik Laporan Masuk</h3>
+                    <canvas id="chartBatang"></canvas>
+                </div>
+            </div>
+
+            <!-- REKAPITULASI LAPORAN MODUL OTHER -->
+            <div class="bg-white rounded-xl shadow border overflow-hidden">
+                <div class="p-3 bg-slate-800 text-white text-xs font-bold flex justify-between items-center">
+                    <span>Rekapitulasi Laporan Pekerjaan Before & After (Multi-Lokasi)</span>
+                    <span class="text-[10px] text-gray-300">*Setiap laporan terverifikasi otomatis dengan ceklis [v]</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 border-b">
+                                <th class="p-3">Waktu</th>
+                                <th class="p-3">Nama</th>
+                                <th class="p-3">Modul</th>
+                                <th class="p-3">Lokasi / Area</th>
+                                <th class="p-3">Keterangan</th>
+                                <th class="p-3 text-center">Status Ceklis</th>
+                                <th class="p-3 text-center">Foto Sebelum</th>
+                                <th class="p-3 text-center">Foto Sesudah</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-laporan-body"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="text-center text-xs text-slate-400 py-2">
-        &copy; 2026 Grand El Hajj. All rights reserved.
-    </footer>
+    <!-- MODAL GANTI LOGO PERUSAHAAN -->
+    <div id="modal-ganti-logo" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <h3 class="font-bold text-sm text-center text-slate-800">Pengaturan Logo GRAND EL HAJJ</h3>
+            <p class="text-xs text-gray-500 text-center">Masukkan password otorisasi untuk mengubah logo perusahaan:</p>
+            
+            <div id="form-auth-logo" class="space-y-3">
+                <input type="password" id="input-pass-logo" placeholder="Password Otentikasi Logo" class="w-full px-4 py-2 border rounded-lg text-center text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                <button onclick="verifikasiPasswordLogo()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg text-xs">Verifikasi Access</button>
+            </div>
+
+            <div id="form-upload-logo" class="hidden space-y-3">
+                <label class="block text-xs font-semibold text-gray-700">Pilih File Logo Baru:</label>
+                <input type="file" id="file-logo-baru" accept="image/*" class="w-full border p-2 rounded text-xs bg-gray-50">
+                <button onclick="simpanLogoBaru()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs">Terapkan Logo Baru</button>
+            </div>
+
+            <button onclick="tutupModalLogo()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL VERIFIKASI KODE UNIK -->
+    <div id="modal-verifikasi" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <h3 class="font-bold text-sm text-center">Verifikasi Kode Modul</h3>
+            <p id="modal-petunjuk" class="text-xs text-gray-500 text-center"></p>
+            <input type="password" id="input-kode-verifikasi" placeholder="Masukkan Kode Verifikasi" class="w-full px-4 py-2 border rounded-lg text-center text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            <div class="flex gap-2">
+                <button onclick="batalVerifikasi()" class="w-1/2 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-xs">Batal</button>
+                <button onclick="prosesVerifikasiModul()" class="w-1/2 bg-indigo-600 text-white font-bold py-2 rounded-lg text-xs">Konfirmasi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP NOTIFIKASI TUGAS PRIORITAS PEKERJAAN -->
+    <div id="modal-notifikasi-tugas" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border-t-8 border-blue-600">
+            <div class="flex items-center gap-3 text-blue-600">
+                <i class="fa-solid fa-circle-info text-3xl"></i>
+                <div>
+                    <h3 class="font-bold text-base text-gray-800">Tugas Prioritas Divisi!</h3>
+                    <p class="text-xs text-gray-500">Pengumuman pekerjaan khusus untuk divisi Anda:</p>
+                </div>
+            </div>
+            <div id="notif-tugas-isi" class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-xs font-semibold text-blue-900"></div>
+            <button onclick="tutupNotifTugas()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs shadow transition">
+                SAYA MENGERTI & SIAP KERJAKAN
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL LIGHTBOX FOTO -->
+    <div id="modal-lightbox" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 cursor-pointer" onclick="this.classList.add('hidden')">
+        <img id="img-lightbox" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl border-2 border-white">
+    </div>
+
+    <!-- MODAL DETAIL BIODATA -->
+    <div id="modal-biodata" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-gray-800">Biodata Lengkap Karyawan</h3>
+                <button onclick="document.getElementById('modal-biodata').classList.add('hidden')" class="text-gray-400 hover:text-black"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex gap-4 items-center">
+                <img id="bio-foto" class="w-20 h-20 rounded-xl object-cover border-2 border-indigo-500 cursor-pointer" onclick="perbesarFoto(this.src)">
+                <div>
+                    <h4 id="bio-nama" class="font-bold text-base text-slate-800"></h4>
+                    <p id="bio-jabatan" class="text-xs text-indigo-600 font-semibold"></p>
+                    <p id="bio-divisi" class="text-xs text-gray-500"></p>
+                </div>
+            </div>
+            <div class="space-y-2 text-xs bg-gray-50 p-3 rounded-lg border">
+                <p><strong>Tanggal Lahir:</strong> <span id="bio-tgllahir"></span></p>
+                <p><strong>Alamat:</strong> <span id="bio-alamat"></span></p>
+                <p><strong>Kode Unik Utama:</strong> <span id="bio-kode" class="font-mono font-bold"></span></p>
+            </div>
+        </div>
+    </div>
 
     <!-- ENGINE JAVASCRIPT FIREBASE -->
     <script type="module">
@@ -130,122 +537,831 @@
             projectId: "aplikasi-grand-el-hajj",
             storageBucket: "aplikasi-grand-el-hajj.firebasestorage.app",
             messagingSenderId: "205554063779",
-            appId: "1:205554063779:web:c8e5de2802ad9824d16216",
-            measurementId: "G-NX1GJ7958X"
+            appId: "1:205554063779:web:c8e5de2802ad9824d16216"
         };
 
         const app = initializeApp(firebaseConfig);
-        // KONFIGURASI FIX REGION ASIA
         const db = getDatabase(app, firebaseConfig.databaseURL);
 
         const HOTEL_LAT = -6.175392;
         const HOTEL_LNG = 106.827153;
         const RADIUS_MAKSIMAL_KM = 0.5;
 
-        // BUKA/TUTUP MODAL ADMIN
-        window.bukaModalAdmin = function() {
-            const pwd = prompt("Masukkan Password Admin:");
-            if (pwd === "@dmin@1234#") {
-                document.getElementById('panel-admin').classList.remove('hidden');
-            } else if (pwd !== null) {
-                alert("Password Admin Salah!");
+        window.pengaturanJamAbsen = {
+            masukMulai: "06:00",
+            masukAkhir: "09:00",
+            pulangMulai: "16:00",
+            pulangAkhir: "21:00"
+        };
+
+        // DATA BAWAAN DEFAULT HANYA DIGUNAKAN JIKA FIREBASE KOSONG
+        const defaultKaryawan = [
+            { 
+                nama: "Budi Santoso", 
+                kodeAwal: "001", 
+                role: "Teknisi", 
+                jabatan: "Teknisi AC & Listrik", 
+                tglLahir: "1992-05-14", 
+                alamat: "Jl. Merdeka No. 45 Jakarta", 
+                fotoProfil: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300",
+                fotoWajahSample: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300"
+            },
+            { 
+                nama: "Ahmad Dani", 
+                kodeAwal: "002", 
+                role: "OB", 
+                jabatan: "Cleaning Service Leader", 
+                tglLahir: "1995-08-20", 
+                alamat: "Jl. Anggrek No. 12 Tangerang", 
+                fotoProfil: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300",
+                fotoWajahSample: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300"
             }
+        ];
+
+        window.databaseKaryawan = [];
+        window.dataAbsensi = [];
+        window.dataLaporan = [];
+        window.currentUser = null;
+        window.targetModulDipilih = '';
+        window.fotoWajahTerambilData = null;
+        
+        window.pengumumanKhusus = {
+            TEKNISI: "Pengumuman Khusus Teknisi GRAND EL HAJJ: Perbaikan AC Room 204 & Pengecekan Panel Listrik Utama Didahulukan!",
+            OB: "Pengumuman Khusus OB GRAND EL HAJJ: Pembersihan Area Lobby Utama & Polishing Lantai Koridor Lt. 2 Didahulukan!"
         };
 
-        window.tutupModalAdmin = function() {
-            document.getElementById('panel-admin').classList.add('hidden');
-        };
+        window.tempFotoBefore = null;
+        window.tempFotoAfter = null;
+        window.fotoWajahTerambil = false;
+        window.lokasiValid = false;
+        window.tempFotoWajahAdmin = null;
+        window.streamAdminCam = null;
 
-        // FITUR GANTI LOGO
-        window.mintaAksesGantiLogo = function() {
-            document.getElementById('input-logo-file').click();
-        };
-
-        window.prosesGantiLogo = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const url = e.target.result;
-                document.getElementById('app-logo').src = url;
-                localStorage.setItem('custom_logo_url', url);
-                alert("Logo berhasil diperbarui!");
-            };
-            reader.readAsDataURL(file);
-        };
-
-        // FITUR GANTI BACKDROP (DENGAN PASSWORD SPECIAL)
-        window.mintaAksesGantiBackdrop = function() {
-            const pwd = prompt("Masukkan Kata Sandi Khusus Backdrop:");
-            if (pwd === "backdrop@1234#") {
-                document.getElementById('input-backdrop-file').click();
-            } else if (pwd !== null) {
-                alert("Kata sandi backdrop salah!");
+        // BACA DATA KARYAWAN REALTIME
+        onValue(ref(db, "dataKaryawan"), (snapshot) => {
+            const data = snapshot.val();
+            window.databaseKaryawan = [];
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    let item = data[key];
+                    item._key = key;
+                    window.databaseKaryawan.push(item);
+                });
+            } else {
+                // Inisialisasi awal ke Firebase jika database masih kosong
+                defaultKaryawan.forEach(k => push(ref(db, "dataKaryawan"), k));
             }
-        };
+            renderTabelKaryawan();
+        });
 
-        window.prosesGantiBackdrop = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (file.size > 3 * 1024 * 1024) {
-                alert("Ukuran gambar terlalu besar! Maksimal 3MB.");
-                return;
+        // BACA DATA LAPORAN REALTIME
+        onValue(ref(db, "dataLaporan"), (snapshot) => {
+            const data = snapshot.val();
+            window.dataLaporan = [];
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    window.dataLaporan.push(data[key]);
+                });
             }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageUrl = e.target.result;
-                terapkanBackdrop(imageUrl);
-                localStorage.setItem('custom_backdrop_url', imageUrl);
-                alert("Backdrop berhasil diperbarui!");
-            };
-            reader.readAsDataURL(file);
-        };
-
-        function terapkanBackdrop(url) {
-            document.body.style.backgroundImage = `url('${url}')`;
-        }
-
-        // LOAD LOGO & BACKDROP DARI LOCALSTORAGE
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedLogo = localStorage.getItem('custom_logo_url');
-            if (savedLogo) {
-                document.getElementById('app-logo').src = savedLogo;
-            }
-
-            const savedBackdrop = localStorage.getItem('custom_backdrop_url');
-            if (savedBackdrop) {
-                terapkanBackdrop(savedBackdrop);
+            if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
+                renderDasborAdmin();
             }
         });
 
-        // FUNGSI SIMPAN JADWAL
-        window.simpanJadwalAbsen = function() {
-            const jadwal = {
-                masukMulai: document.getElementById('set-jam-masuk-mulai').value,
-                masukAkhir: document.getElementById('set-jam-masuk-akhir').value,
-                pulangMulai: document.getElementById('set-jam-pulang-mulai').value,
-                pulangAkhir: document.getElementById('set-jam-pulang-akhir').value
-            };
+        // BACA DATA ABSENSI REALTIME
+        onValue(ref(db, "dataAbsensi"), (snapshot) => {
+            const data = snapshot.val();
+            window.dataAbsensi = [];
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    window.dataAbsensi.push(data[key]);
+                });
+            }
+            if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
+                renderDasborAdmin();
+            }
+        });
 
-            set(ref(db, 'pengaturan/jadwal'), jadwal)
-                .then(() => alert("Jadwal absensi berhasil disimpan ke Firebase!"))
-                .catch((error) => alert("Gagal menyimpan jadwal: " + error.message));
-        };
+        window.tambahInputLokasi = function() {
+            const container = document.getElementById('container-lokasi-list');
+            const itemCounts = container.children.length + 1;
+            
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2 mt-2";
+            div.innerHTML = `
+                <span class="text-xs font-bold text-indigo-700 w-5">${itemCounts}.</span>
+                <input type="text" name="input-lokasi-item" placeholder="Contoh: Lt. ${itemCounts} Area..." required class="w-full border rounded-lg p-2 text-xs bg-white focus:ring-2 focus:ring-indigo-400 outline-none">
+                <button type="button" onclick="this.parentElement.remove(); reorderLokasiNumber();" class="bg-red-500 text-white px-2 py-1.5 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
 
-        window.prosesMasuk = function() {
-            const kode = document.getElementById('input-kode-unik').value.trim();
-            if (!kode) {
-                alert("Harap masukkan kode unik Anda!");
+        window.reorderLokasiNumber = function() {
+            const container = document.getElementById('container-lokasi-list');
+            Array.from(container.children).forEach((child, index) => {
+                child.querySelector('span').innerText = (index + 1) + ".";
+            });
+        }
+
+        window.simpanPengaturanJam = function() {
+            window.pengaturanJamAbsen.masukMulai = document.getElementById('set-jam-masuk-mulai').value;
+            window.pengaturanJamAbsen.masukAkhir = document.getElementById('set-jam-masuk-akhir').value;
+            window.pengaturanJamAbsen.pulangMulai = document.getElementById('set-jam-pulang-mulai').value;
+            window.pengaturanJamAbsen.pulangAkhir = document.getElementById('set-jam-pulang-akhir').value;
+
+            alert("Jadwal Jam Masuk & Pulang Berhasil Diperbarui!");
+            updateInfoJadwalAbsenDisplay();
+        }
+
+        window.updateInfoJadwalAbsenDisplay = function() {
+            const info = document.getElementById('info-jadwal-absen');
+            if (info) {
+                info.innerText = `Jadwal Masuk: ${window.pengaturanJamAbsen.masukMulai} - ${window.pengaturanJamAbsen.masukAkhir} | Jadwal Pulang: ${window.pengaturanJamAbsen.pulangMulai} - ${window.pengaturanJamAbsen.pulangAkhir}`;
+            }
+        }
+
+        window.mintaAksesGantiLogo = function() {
+            document.getElementById('input-pass-logo').value = '';
+            document.getElementById('form-auth-logo').classList.remove('hidden');
+            document.getElementById('form-upload-logo').classList.add('hidden');
+            document.getElementById('modal-ganti-logo').classList.remove('hidden');
+        }
+
+        window.verifikasiPasswordLogo = function() {
+            const pwd = document.getElementById('input-pass-logo').value;
+            if (pwd === "logo@1234#") {
+                document.getElementById('form-auth-logo').classList.add('hidden');
+                document.getElementById('form-upload-logo').classList.remove('hidden');
+            } else {
+                alert("Password Otentikasi Logo Salah!");
+            }
+        }
+
+        window.simpanLogoBaru = function() {
+            const input = document.getElementById('file-logo-baru');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const srcLogo = e.target.result;
+                    document.getElementById('icon-default-splash').classList.add('hidden');
+                    const imgSplash = document.getElementById('img-logo-splash');
+                    imgSplash.src = srcLogo;
+                    imgSplash.classList.remove('hidden');
+
+                    document.getElementById('icon-default-nav').classList.add('hidden');
+                    const imgNav = document.getElementById('img-logo-nav');
+                    imgNav.src = srcLogo;
+                    imgNav.classList.remove('hidden');
+
+                    alert("Logo Perusahaan Berhasil Diperbarui!");
+                    tutupModalLogo();
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                alert("Pilih file gambar logo terlebih dahulu!");
+            }
+        }
+
+        window.tutupModalLogo = function() {
+            document.getElementById('modal-ganti-logo').classList.add('hidden');
+        }
+
+        window.bukaModalAdmin = function() {
+            const pass = prompt("Masukkan Kode Unik Admin:");
+            if (pass === "@dmin@1234#") {
+                window.currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
+                document.getElementById('splash-screen').classList.add('hidden');
+                const adminSec = document.getElementById('dasbor-admin-section');
+                adminSec.classList.remove('hidden');
+                document.getElementById('user-display').innerText = "Admin GRAND EL HAJJ";
+                
+                document.getElementById('set-jam-masuk-mulai').value = window.pengaturanJamAbsen.masukMulai;
+                document.getElementById('set-jam-masuk-akhir').value = window.pengaturanJamAbsen.masukAkhir;
+                document.getElementById('set-jam-pulang-mulai').value = window.pengaturanJamAbsen.pulangMulai;
+                document.getElementById('set-jam-pulang-akhir').value = window.pengaturanJamAbsen.pulangAkhir;
+
+                renderDasborAdmin();
+                adminSec.scrollIntoView({ behavior: 'smooth' });
+            } else if (pass !== null) {
+                alert("Akses Ditolak! Password Admin Salah.");
+            }
+        }
+
+        window.nyalakanKameraAdmin = function() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    window.streamAdminCam = stream;
+                    document.getElementById('admin-webcam').srcObject = stream;
+                })
+                .catch(err => alert("Gagal mengakses kamera admin!"));
+        }
+
+        window.ambilFotoWajahAdmin = function() {
+            const video = document.getElementById('admin-webcam');
+            const canvas = document.getElementById('admin-canvas-wajah');
+            const imgPrev = document.getElementById('admin-prev-wajah');
+            canvas.width = video.videoWidth || 300;
+            canvas.height = video.videoHeight || 200;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            window.tempFotoWajahAdmin = canvas.toDataURL('image/png');
+            imgPrev.src = window.tempFotoWajahAdmin;
+            imgPrev.classList.remove('hidden');
+            
+            document.getElementById('admin-status-wajah').innerText = "✓ Sampel Foto Verifikasi Wajah Berhasil Diambil!";
+            document.getElementById('admin-status-wajah').className = "text-xs text-emerald-600 font-bold";
+        }
+
+        window.previewImg = function(input, targetId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(targetId);
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    if (targetId === 'prev-before') window.tempFotoBefore = e.target.result;
+                    if (targetId === 'prev-after') window.tempFotoAfter = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        window.perbesarFoto = function(url) {
+            document.getElementById('img-lightbox').src = url;
+            document.getElementById('modal-lightbox').classList.remove('hidden');
+        }
+
+        window.lihatBiodata = function(index) {
+            const item = window.databaseKaryawan[index];
+            document.getElementById('bio-nama').innerText = item.nama;
+            document.getElementById('bio-jabatan').innerText = item.jabatan;
+            document.getElementById('bio-divisi').innerText = "Divisi: " + item.role;
+            document.getElementById('bio-tgllahir').innerText = item.tglLahir;
+            document.getElementById('bio-alamat').innerText = item.alamat;
+            document.getElementById('bio-kode').innerText = item.kodeAwal;
+            document.getElementById('bio-foto').src = item.fotoProfil;
+            document.getElementById('modal-biodata').classList.remove('hidden');
+        }
+
+        window.renderTabelKaryawan = function() {
+            const tbody = document.getElementById('tabel-karyawan-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            window.databaseKaryawan.forEach((item, index) => {
+                const kodeTEK = "TEK" + item.kodeAwal;
+                const kodeCLE = "CLE" + item.kodeAwal;
+                const fotoWajah = item.fotoWajahSample || item.fotoProfil;
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2">
+                            <img src="${item.fotoProfil}" onclick="perbesarFoto('${item.fotoProfil}')" class="w-10 h-10 rounded-full object-cover border border-indigo-400 cursor-pointer shadow-sm hover:scale-105 transition">
+                        </td>
+                        <td class="p-2">
+                            <img src="${fotoWajah}" onclick="perbesarFoto('${fotoWajah}')" class="w-10 h-10 rounded-lg object-cover border border-emerald-500 cursor-pointer shadow-sm hover:scale-105 transition">
+                        </td>
+                        <td class="p-2 font-semibold">
+                            ${item.nama}
+                            <button onclick="lihatBiodata(${index})" class="block text-[10px] text-indigo-600 underline">Lihat Biodata</button>
+                        </td>
+                        <td class="p-2 font-mono bg-gray-100 rounded">${item.kodeAwal}</td>
+                        <td class="p-2 font-mono text-blue-600 font-bold">${kodeTEK}</td>
+                        <td class="p-2 font-mono text-emerald-600 font-bold">${kodeCLE}</td>
+                        <td class="p-2 text-gray-600">
+                            <span class="font-bold text-gray-800">${item.jabatan}</span> (${item.role})
+                        </td>
+                        <td class="p-2 text-center">
+                            <button onclick="hapusKaryawan('${item._key}')" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.tambahKaryawan = function(e) {
+            e.preventDefault();
+            const nama = document.getElementById('add-nama').value.trim();
+            const kodeAwal = document.getElementById('add-kode').value.trim();
+            const jabatan = document.getElementById('add-jabatan').value.trim();
+            const role = document.getElementById('add-role').value;
+            const tglLahir = document.getElementById('add-tgllahir').value;
+            const alamat = document.getElementById('add-alamat').value.trim();
+            const fileFoto = document.getElementById('add-fotoprofil').files[0];
+
+            if (!window.tempFotoWajahAdmin) {
+                alert("Harap ambil Sampel Foto Verifikasi Wajah via Kamera terlebih dahulu!");
                 return;
             }
-            alert("Memproses masuk untuk kode: " + kode);
-        };
+
+            if (window.databaseKaryawan.some(u => u.kodeAwal === kodeAwal)) {
+                alert("Kode Unik Awal sudah digunakan!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const dataBaru = {
+                    nama, kodeAwal, role, jabatan, tglLahir, alamat, 
+                    fotoProfil: evt.target.result,
+                    fotoWajahSample: window.tempFotoWajahAdmin
+                };
+
+                push(ref(db, "dataKaryawan"), dataBaru);
+
+                alert(`Karyawan ${nama} berhasil didaftarkan!`);
+                e.target.reset();
+                window.tempFotoWajahAdmin = null;
+                document.getElementById('admin-prev-wajah').classList.add('hidden');
+                document.getElementById('admin-status-wajah').innerText = "Sampel foto verifikasi wajah belum diambil.";
+                document.getElementById('admin-status-wajah').className = "text-xs text-amber-600 font-semibold";
+                
+                if (window.streamAdminCam) window.streamAdminCam.getTracks().forEach(t => t.stop());
+            }
+            reader.readAsDataURL(fileFoto);
+        }
+
+        window.hapusKaryawan = function(key) {
+            if (confirm("Apakah Anda yakin ingin menghapus karyawan ini?")) {
+                if (key) {
+                    remove(ref(db, "dataKaryawan/" + key));
+                }
+            }
+        }
+
+        window.prosesMasukAwal = function() {
+            const kode = document.getElementById('input-kode-awal').value.trim();
+            const user = window.databaseKaryawan.find(u => u.kodeAwal === kode);
+
+            if (user) {
+                window.currentUser = user;
+                document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
+                document.getElementById('splash-screen').classList.add('hidden');
+            } else {
+                alert("Kode Unik Karyawan Tidak Terdaftar!");
+            }
+        }
+
+        window.mintaVerifikasiFitur = function(modul) {
+            window.targetModulDipilih = modul;
+            document.getElementById('input-kode-verifikasi').value = '';
+            const petunjuk = document.getElementById('modal-petunjuk');
+
+            if (modul === 'ABSENSI') {
+                petunjuk.innerText = "Masukkan KODE UNIK AWAL Anda (atau Kode TEK/CLE):";
+            } else if (modul === 'TEKNISI') {
+                petunjuk.innerText = "Masukkan KODE KHUSUS TEKNISI (Contoh: TEK001):";
+            } else if (modul === 'OB') {
+                petunjuk.innerText = "Masukkan KODE KHUSUS OB (Contoh: CLE001):";
+            }
+
+            document.getElementById('modal-verifikasi').classList.remove('hidden');
+        }
+
+        window.batalVerifikasi = function() {
+            document.getElementById('modal-verifikasi').classList.add('hidden');
+        }
+
+        window.prosesVerifikasiModul = function() {
+            const input = document.getElementById('input-kode-verifikasi').value.trim();
+            
+            if (input === "@dmin@1234#") {
+                window.currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
+                document.getElementById('user-display').innerText = "Admin GRAND EL HAJJ";
+                document.getElementById('modal-verifikasi').classList.add('hidden');
+                bukaModulKerja(window.targetModulDipilih);
+                return;
+            }
+
+            if (window.targetModulDipilih === 'ABSENSI') {
+                const user = window.databaseKaryawan.find(u => 
+                    u.kodeAwal === input || ("TEK" + u.kodeAwal) === input || ("CLE" + u.kodeAwal) === input
+                );
+
+                if (user) {
+                    window.currentUser = user;
+                    document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
+                    document.getElementById('modal-verifikasi').classList.add('hidden');
+                    bukaModulKerja('ABSENSI');
+                } else {
+                    alert("Kode Unik Salah untuk Modul Absensi!");
+                }
+            } 
+            else if (window.targetModulDipilih === 'TEKNISI') {
+                const user = window.databaseKaryawan.find(u => ("TEK" + u.kodeAwal) === input);
+
+                if (user) {
+                    window.currentUser = user;
+                    document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
+                    document.getElementById('modal-verifikasi').classList.add('hidden');
+                    
+                    document.getElementById('main-running-text').innerText = window.pengumumanKhusus.TEKNISI;
+                    tampilkanNotifTugasPrioritas('TEKNISI');
+                } else {
+                    alert("AKSES DITOLAK! Wajib masukkan kode khusus TEK (contoh: TEK001).");
+                }
+            } 
+            else if (window.targetModulDipilih === 'OB') {
+                const user = window.databaseKaryawan.find(u => ("CLE" + u.kodeAwal) === input);
+
+                if (user) {
+                    window.currentUser = user;
+                    document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
+                    document.getElementById('modal-verifikasi').classList.add('hidden');
+                    
+                    document.getElementById('main-running-text').innerText = window.pengumumanKhusus.OB;
+                    tampilkanNotifTugasPrioritas('OB');
+                } else {
+                    alert("AKSES DITOLAK! Wajib masukkan kode khusus CLE (contoh: CLE001).");
+                }
+            }
+        }
+
+        window.tampilkanNotifTugasPrioritas = function(modul) {
+            document.getElementById('notif-tugas-isi').innerText = window.pengumumanKhusus[modul];
+            document.getElementById('modal-notifikasi-tugas').classList.remove('hidden');
+        }
+
+        window.tutupNotifTugas = function() {
+            document.getElementById('modal-notifikasi-tugas').classList.add('hidden');
+            bukaModulKerja(window.targetModulDipilih);
+        }
+
+        window.bukaModulKerja = function(modul) {
+            const container = document.getElementById('modul-container');
+            const title = document.getElementById('modul-title');
+            const secAbsen = document.getElementById('section-absensi-khusus');
+            const fieldLaporan = document.getElementById('field-laporan-pekerjaan');
+            
+            document.getElementById('form-jenis-laporan').value = modul;
+            document.getElementById('form-nama-karyawan').value = window.currentUser ? window.currentUser.nama : "Karyawan";
+            
+            const skrg = new Date();
+            document.getElementById('form-waktu').value = skrg.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + " | " + skrg.toLocaleTimeString('id-ID');
+            
+            container.classList.remove('hidden');
+
+            if (modul === 'ABSENSI') {
+                title.innerText = "MODUL 1: PRESENSI KEHADIRAN WAJAH & GPS";
+                secAbsen.classList.remove('hidden');
+                fieldLaporan.classList.add('hidden');
+                updateInfoJadwalAbsenDisplay();
+                nyalakanKamera();
+            } else {
+                secAbsen.classList.add('hidden');
+                fieldLaporan.classList.remove('hidden');
+                matikanKamera();
+                if (modul === 'TEKNISI') title.innerText = "MODUL 2: LAPORAN MAINTENANCE TEKNISI (BEFORE & AFTER)";
+                if (modul === 'OB') title.innerText = "MODUL 3: CHECKLIST KEBERSIHAN OB / CS (BEFORE & AFTER)";
+            }
+
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        let streamKamera = null;
+        window.nyalakanKamera = function() {
+            window.fotoWajahTerambil = false;
+            window.fotoWajahTerambilData = null;
+            document.getElementById('status-wajah').innerText = "Foto belum diambil";
+            document.getElementById('status-wajah').className = "text-xs text-amber-600 mt-1 font-semibold";
+            
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    streamKamera = stream;
+                    document.getElementById('webcam').srcObject = stream;
+                })
+                .catch(err => {
+                    alert("Gagal mengakses kamera!");
+                });
+        }
+
+        window.matikanKamera = function() {
+            if (streamKamera) streamKamera.getTracks().forEach(track => track.stop());
+        }
+
+        window.ambilFotoWajah = function() {
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('canvas-wajah');
+            canvas.width = video.videoWidth || 300;
+            canvas.height = video.videoHeight || 200;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            window.fotoWajahTerambilData = canvas.toDataURL('image/png');
+            window.fotoWajahTerambil = true;
+            document.getElementById('status-wajah').innerText = "✓ Foto Wajah Berhasil Terverifikasi!";
+            document.getElementById('status-wajah').className = "text-xs text-emerald-600 mt-1 font-bold";
+        }
+
+        window.cekLokasiGPS = function() {
+            const statusLoc = document.getElementById('status-lokasi');
+            statusLoc.innerText = "Mengecek lokasi...";
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const jarak = hitungJarakKm(lat, lng, HOTEL_LAT, HOTEL_LNG);
+
+                    if (jarak <= RADIUS_MAKSIMAL_KM) {
+                        window.lokasiValid = true;
+                        statusLoc.innerText = `✓ Terdeteksi di Area GRAND EL HAJJ (${Math.round(jarak*1000)}m)`;
+                        statusLoc.className = "text-xs text-emerald-600 font-bold";
+                    } else {
+                        window.lokasiValid = false;
+                        statusLoc.innerText = `✕ Di luar Area GRAND EL HAJJ (${jarak.toFixed(2)}km)`;
+                        statusLoc.className = "text-xs text-red-600 font-bold";
+                    }
+                }, () => {
+                    window.lokasiValid = true;
+                    statusLoc.innerText = "✓ Lokasi Terverifikasi (Area GRAND EL HAJJ)";
+                    statusLoc.className = "text-xs text-emerald-600 font-bold";
+                });
+            }
+        }
+
+        function hitungJarakKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        window.tutupModul = function() {
+            matikanKamera();
+            document.getElementById('modul-container').classList.add('hidden');
+        }
+
+        window.simpanLaporan = function(e) {
+            e.preventDefault();
+            const modul = document.getElementById('form-jenis-laporan').value;
+            const nama = document.getElementById('form-nama-karyawan').value;
+            const skrg = new Date();
+            const jamStr = String(skrg.getHours()).padStart(2, '0') + ":" + String(skrg.getMinutes()).padStart(2, '0');
+
+            if (modul === 'ABSENSI') {
+                if (!window.fotoWajahTerambil || !window.lokasiValid) {
+                    alert("Verifikasi Wajah dan Lokasi GPS Wajib Dilakukan!");
+                    return;
+                }
+
+                const tipeAbsen = document.getElementById('form-tipe-absensi').value;
+                let statusKet = "Tepat Waktu";
+
+                if (tipeAbsen === 'MASUK') {
+                    if (jamStr < window.pengaturanJamAbsen.masukMulai) statusKet = "Terlalu Awal";
+                    else if (jamStr > window.pengaturanJamAbsen.masukAkhir) statusKet = "Terlambat";
+                } else if (tipeAbsen === 'PULANG') {
+                    if (jamStr < window.pengaturanJamAbsen.pulangMulai) statusKet = "Pulang Cepat";
+                    else if (jamStr > window.pengaturanJamAbsen.pulangAkhir) statusKet = "Di Luar Jadwal";
+                }
+
+                push(ref(db, "dataAbsensi"), {
+                    waktu: skrg.toLocaleString('id-ID'),
+                    nama: nama,
+                    jabatan: window.currentUser ? (window.currentUser.jabatan || window.currentUser.role) : "-",
+                    tipe: tipeAbsen,
+                    statusWaktu: statusKet,
+                    fotoWajah: window.fotoWajahTerambilData
+                });
+
+                alert(`Absensi ${tipeAbsen} Berhasil Disimpan ke Firebase! Status: ${statusKet}`);
+            } else {
+                const ket = document.getElementById('form-keterangan').value;
+                
+                const inputLokasiElements = document.getElementsByName('input-lokasi-item');
+                let listLokasiArray = [];
+                for (let el of inputLokasiElements) {
+                    if (el.value.trim() !== '') {
+                        listLokasiArray.push(el.value.trim());
+                    }
+                }
+
+                if (listLokasiArray.length === 0) {
+                    alert("Harap masukkan setidaknya 1 tempat/lokasi!");
+                    return;
+                }
+
+                if (!window.tempFotoBefore || !window.tempFotoAfter) {
+                    alert("Wajib melampirkan Foto Sebelum (Before) DAN Foto Sesudah (After)!");
+                    return;
+                }
+
+                push(ref(db, "dataLaporan"), {
+                    tanggalJam: skrg.toLocaleString('id-ID'),
+                    tanggalOnly: skrg.toLocaleDateString('id-ID'),
+                    waktuOnly: skrg.toLocaleTimeString('id-ID'),
+                    nama: nama,
+                    modul: modul,
+                    lokasiArray: listLokasiArray,
+                    keterangan: ket,
+                    statusCeklis: "[v] Terkirim & Selesai",
+                    fotoBefore: window.tempFotoBefore,
+                    fotoAfter: window.tempFotoAfter
+                });
+
+                alert(`Laporan Modul ${modul} Berhasil Disimpan ke Firebase! [v]`);
+            }
+
+            document.getElementById('form-laporan').reset();
+            document.getElementById('prev-before').classList.add('hidden');
+            document.getElementById('prev-after').classList.add('hidden');
+            
+            document.getElementById('container-lokasi-list').innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-indigo-700 w-5">1.</span>
+                    <input type="text" name="input-lokasi-item" placeholder="Contoh: Lt. 2 Room 204" required class="w-full border rounded-lg p-2 text-xs bg-white focus:ring-2 focus:ring-indigo-400 outline-none">
+                </div>
+            `;
+
+            window.tempFotoBefore = null;
+            window.tempFotoAfter = null;
+            tutupModul();
+
+            if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
+                renderDasborAdmin();
+            }
+        }
+
+        window.renderDasborAdmin = function() {
+            renderTabelKaryawan();
+            
+            const tbodyAbsen = document.getElementById('tabel-absensi-body');
+            tbodyAbsen.innerHTML = '';
+
+            window.dataAbsensi.forEach(item => {
+                let badgeStatus = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                if (item.statusWaktu === 'Terlambat' || item.statusWaktu === 'Di Luar Jadwal') {
+                    badgeStatus = 'bg-red-100 text-red-800 border-red-300';
+                } else if (item.statusWaktu === 'Terlalu Awal' || item.statusWaktu === 'Pulang Cepat') {
+                    badgeStatus = 'bg-amber-100 text-amber-800 border-amber-300';
+                }
+
+                const imgWajah = item.fotoWajah 
+                    ? `<img src="${item.fotoWajah}" onclick="perbesarFoto('${item.fotoWajah}')" class="w-10 h-10 object-cover rounded-full mx-auto border cursor-pointer hover:scale-105 transition">`
+                    : '-';
+
+                tbodyAbsen.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-mono text-gray-600">${item.waktu}</td>
+                        <td class="p-3 font-bold text-gray-800">${item.nama}</td>
+                        <td class="p-3 text-gray-600">${item.jabatan}</td>
+                        <td class="p-3 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold ${item.tipe === 'MASUK' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">
+                                ${item.tipe}
+                            </span>
+                        </td>
+                        <td class="p-3 text-center">
+                            <span class="px-2.5 py-1 rounded border text-[11px] font-bold ${badgeStatus}">
+                                ${item.statusWaktu}
+                            </span>
+                        </td>
+                        <td class="p-3 text-center">${imgWajah}</td>
+                    </tr>
+                `;
+            });
+
+            const tbodyLaporan = document.getElementById('tabel-laporan-body');
+            tbodyLaporan.innerHTML = '';
+            let cntAbsen = window.dataAbsensi.length, cntTeknisi = 0, cntOB = 0;
+
+            window.dataLaporan.forEach(item => {
+                if (item.modul === 'TEKNISI') cntTeknisi++;
+                if (item.modul === 'OB') cntOB++;
+
+                const displayLokasi = item.lokasiArray ? item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('<br>') : '-';
+
+                const imgBeforeHtml = (item.fotoBefore && item.fotoBefore !== '-') 
+                    ? `<img src="${item.fotoBefore}" onclick="perbesarFoto('${item.fotoBefore}')" class="h-12 w-12 object-cover rounded mx-auto cursor-pointer border">`
+                    : '-';
+                const imgAfterHtml = (item.fotoAfter && item.fotoAfter !== '-') 
+                    ? `<img src="${item.fotoAfter}" onclick="perbesarFoto('${item.fotoAfter}')" class="h-12 w-12 object-cover rounded mx-auto cursor-pointer border">`
+                    : '-';
+
+                tbodyLaporan.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 text-left font-mono text-gray-500">${item.tanggalJam}</td>
+                        <td class="p-3 text-left font-semibold">${item.nama}</td>
+                        <td class="p-3 text-left"><span class="px-2 py-0.5 rounded font-bold text-xs ${item.modul === 'TEKNISI' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}">${item.modul}</span></td>
+                        <td class="p-3 text-left text-xs text-gray-700 font-semibold bg-gray-50 rounded">${displayLokasi}</td>
+                        <td class="p-3 text-left text-gray-600">${item.keterangan}</td>
+                        <td class="p-3 text-center">
+                            <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-1 rounded text-[10px]">
+                                ${item.statusCeklis}
+                            </span>
+                        </td>
+                        <td class="p-3 text-center">${imgBeforeHtml}</td>
+                        <td class="p-3 text-center">${imgAfterHtml}</td>
+                    </tr>
+                `;
+            });
+
+            const ctxB = document.getElementById('chartBatang').getContext('2d');
+            if (window.chartB) window.chartB.destroy();
+            window.chartB = new Chart(ctxB, {
+                type: 'bar',
+                data: { labels: ['Absensi', 'Teknisi', 'OB'], datasets: [{ data: [cntAbsen, cntTeknisi, cntOB], backgroundColor: ['#2563eb', '#4f46e5', '#10b981'] }] },
+                options: { plugins: { legend: { display: false } } }
+            });
+        }
+
+        window.exportLaporanDivisiKeExcel = function(targetDivisi) {
+            const dataFiltered = window.dataLaporan.filter(item => item.modul === targetDivisi);
+
+            if (dataFiltered.length === 0) {
+                alert(`Belum ada data laporan untuk Divisi ${targetDivisi}!`);
+                return;
+            }
+
+            const excelData = dataFiltered.map((item, index) => {
+                const totalTempat = item.lokasiArray ? item.lokasiArray.length + " Tempat" : "1 Tempat";
+                const detailTempatFormatted = item.lokasiArray ? item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('; ') : '-';
+
+                return {
+                    "NO": index + 1,
+                    "TANGGAL": item.tanggalOnly,
+                    "WAKTU": item.waktuOnly,
+                    "NAMA_KARYAWAN": item.nama,
+                    "DIVISI": item.modul,
+                    "BAGIAN_LAPORAN": targetDivisi === 'TEKNISI' ? 'Maintenance & Perbaikan' : 'Checklist Kebersihan',
+                    "JUMLAH_LOKASI": totalTempat,
+                    "DETAIL_LOKASI": detailTempatFormatted,
+                    "DETAIL_PEKERJAAN": item.keterangan,
+                    "STATUS_CEKLIS": item.statusCeklis
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, `Laporan_${targetDivisi}`);
+            XLSX.writeFile(workbook, `Laporan_${targetDivisi}_GRAND_EL_HAJJ.xlsx`);
+        }
+
+        window.exportAbsensiKeExcel = function() {
+            if (window.dataAbsensi.length === 0) {
+                alert("Belum ada data absensi untuk diekspor!");
+                return;
+            }
+
+            const excelData = window.dataAbsensi.map((item, index) => ({
+                "NO": index + 1,
+                "WAKTU_TRANSAKSI": item.waktu,
+                "NAMA_KARYAWAN": item.nama,
+                "JABATAN": item.jabatan,
+                "TIPE_ABSENSI": item.tipe,
+                "STATUS_WAKTU": item.statusWaktu
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap_Absensi");
+            XLSX.writeFile(workbook, `Rekap_Absensi_GRAND_EL_HAJJ.xlsx`);
+        }
 
         window.exportKeExcel = function() {
-            alert("Fitur Export Excel diaktifkan!");
-        };
+            if (window.dataLaporan.length === 0) {
+                alert("Belum ada laporan pekerjaan yang masuk!");
+                return;
+            }
+
+            const excelData = window.dataLaporan.map((item, index) => ({
+                "NO": index + 1,
+                "WAKTU_INPUT": item.tanggalJam,
+                "NAMA_KARYAWAN": item.nama,
+                "DIVISI": item.modul,
+                "JUMLAH_LOKASI": item.lokasiArray ? item.lokasiArray.length + " Tempat" : "1 Tempat",
+                "DETAIL_LOKASI": item.lokasiArray ? item.lokasiArray.join('; ') : '-',
+                "KETERANGAN_PEKERJAAN": item.keterangan,
+                "STATUS_CEKLIS": item.statusCeklis
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan_Semua");
+            XLSX.writeFile(workbook, `Laporan_Keseluruhan_GRAND_EL_HAJJ.xlsx`);
+        }
+
+        window.ubahRunningText = function() {
+            const target = document.getElementById('admin-target-divisi').value;
+            const teks = document.getElementById('admin-running-text').value.trim();
+            if (teks) {
+                window.pengumumanKhusus[target] = teks;
+                alert(`Pengumuman khusus divisi ${target} berhasil diperbarui!`);
+                document.getElementById('admin-running-text').value = '';
+            }
+        }
+
+        window.keluarAplikasi = function() {
+            window.currentUser = null;
+            matikanKamera();
+            if (window.streamAdminCam) window.streamAdminCam.getTracks().forEach(t => t.stop());
+            document.getElementById('input-kode-awal').value = '';
+            document.getElementById('dasbor-admin-section').classList.add('hidden');
+            tutupModul();
+            document.getElementById('splash-screen').classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
