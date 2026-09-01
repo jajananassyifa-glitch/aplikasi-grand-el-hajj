@@ -1,4 +1,4 @@
-// Import library Firebase secara langsung dari CDN (tidak perlu install npm)
+// Import library Firebase secara langsung dari CDN (tidak perlu install npm) 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getVertexAI, getGenerativeModel } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-vertexai.js";
