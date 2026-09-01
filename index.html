@@ -416,12 +416,6 @@
                     <h3 class="text-xs font-bold text-gray-700 mb-3">Statistik Laporan Masuk</h3>
                     <canvas id="chartBatang"></canvas>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow border">
-                    <h3 class="text-xs font-bold text-gray-700 mb-3">Persentase Modul</h3>
-                    <div class="w-48 mx-auto">
-                        <canvas id="chartLingkaran"></canvas>
-                    </div>
-                </div>
             </div>
 
             <!-- REKAPITULASI LAPORAN MODUL OTHER -->
@@ -531,7 +525,7 @@
         </div>
     </div>
 
-    <!-- ENGINE JAVASCRIPT TERINTEGRASI FIREBASE -->
+    <!-- ENGINE JAVASCRIPT FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -560,7 +554,8 @@
             pulangAkhir: "21:00"
         };
 
-        window.databaseKaryawan = [
+        // DATA BAWAAN DEFAULT HANYA DIGUNAKAN JIKA FIREBASE KOSONG
+        const defaultKaryawan = [
             { 
                 nama: "Budi Santoso", 
                 kodeAwal: "001", 
@@ -583,6 +578,7 @@
             }
         ];
 
+        window.databaseKaryawan = [];
         window.dataAbsensi = [];
         window.dataLaporan = [];
         window.currentUser = null;
@@ -601,7 +597,24 @@
         window.tempFotoWajahAdmin = null;
         window.streamAdminCam = null;
 
-        // LOAD REALTIME DATA DARI FIREBASE
+        // BACA DATA KARYAWAN REALTIME
+        onValue(ref(db, "dataKaryawan"), (snapshot) => {
+            const data = snapshot.val();
+            window.databaseKaryawan = [];
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    let item = data[key];
+                    item._key = key;
+                    window.databaseKaryawan.push(item);
+                });
+            } else {
+                // Inisialisasi awal ke Firebase jika database masih kosong
+                defaultKaryawan.forEach(k => push(ref(db, "dataKaryawan"), k));
+            }
+            renderTabelKaryawan();
+        });
+
+        // BACA DATA LAPORAN REALTIME
         onValue(ref(db, "dataLaporan"), (snapshot) => {
             const data = snapshot.val();
             window.dataLaporan = [];
@@ -615,6 +628,7 @@
             }
         });
 
+        // BACA DATA ABSENSI REALTIME
         onValue(ref(db, "dataAbsensi"), (snapshot) => {
             const data = snapshot.val();
             window.dataAbsensi = [];
@@ -628,18 +642,6 @@
             }
         });
 
-        onValue(ref(db, "dataKaryawan"), (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                window.databaseKaryawan = [];
-                Object.keys(data).forEach((key) => {
-                    window.databaseKaryawan.push(data[key]);
-                });
-                renderTabelKaryawan();
-            }
-        });
-
-        // EKSPOSTING FUNGSI KE WINDOW SUPAYA BISA DIPANGGIL DARI ONCLICK
         window.tambahInputLokasi = function() {
             const container = document.getElementById('container-lokasi-list');
             const itemCounts = container.children.length + 1;
@@ -804,6 +806,7 @@
 
         window.renderTabelKaryawan = function() {
             const tbody = document.getElementById('tabel-karyawan-body');
+            if (!tbody) return;
             tbody.innerHTML = '';
             window.databaseKaryawan.forEach((item, index) => {
                 const kodeTEK = "TEK" + item.kodeAwal;
@@ -829,7 +832,7 @@
                             <span class="font-bold text-gray-800">${item.jabatan}</span> (${item.role})
                         </td>
                         <td class="p-2 text-center">
-                            <button onclick="hapusKaryawan(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="hapusKaryawan('${item._key}')" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -864,10 +867,9 @@
                     fotoWajahSample: window.tempFotoWajahAdmin
                 };
 
-                // SIMPAN KE FIREBASE DATABASE
                 push(ref(db, "dataKaryawan"), dataBaru);
 
-                alert(`Karyawan ${nama} berhasil didaftarkan & tersimpan ke Firebase!`);
+                alert(`Karyawan ${nama} berhasil didaftarkan!`);
                 e.target.reset();
                 window.tempFotoWajahAdmin = null;
                 document.getElementById('admin-prev-wajah').classList.add('hidden');
@@ -879,11 +881,11 @@
             reader.readAsDataURL(fileFoto);
         }
 
-        window.hapusKaryawan = function(index) {
-            if (confirm(`Apakah Anda yakin ingin menghapus karyawan "${window.databaseKaryawan[index].nama}"?`)) {
-                window.databaseKaryawan.splice(index, 1);
-                set(ref(db, "dataKaryawan"), window.databaseKaryawan);
-                renderTabelKaryawan();
+        window.hapusKaryawan = function(key) {
+            if (confirm("Apakah Anda yakin ingin menghapus karyawan ini?")) {
+                if (key) {
+                    remove(ref(db, "dataKaryawan/" + key));
+                }
             }
         }
 
@@ -1092,7 +1094,6 @@
             document.getElementById('modul-container').classList.add('hidden');
         }
 
-        // SIMPAN DATA KE FIREBASE REALTIME DATABASE
         window.simpanLaporan = function(e) {
             e.preventDefault();
             const modul = document.getElementById('form-jenis-laporan').value;
@@ -1110,20 +1111,13 @@
                 let statusKet = "Tepat Waktu";
 
                 if (tipeAbsen === 'MASUK') {
-                    if (jamStr < window.pengaturanJamAbsen.masukMulai) {
-                        statusKet = "Terlalu Awal";
-                    } else if (jamStr > window.pengaturanJamAbsen.masukAkhir) {
-                        statusKet = "Terlambat";
-                    }
+                    if (jamStr < window.pengaturanJamAbsen.masukMulai) statusKet = "Terlalu Awal";
+                    else if (jamStr > window.pengaturanJamAbsen.masukAkhir) statusKet = "Terlambat";
                 } else if (tipeAbsen === 'PULANG') {
-                    if (jamStr < window.pengaturanJamAbsen.pulangMulai) {
-                        statusKet = "Pulang Cepat";
-                    } else if (jamStr > window.pengaturanJamAbsen.pulangAkhir) {
-                        statusKet = "Di Luar Jadwal";
-                    }
+                    if (jamStr < window.pengaturanJamAbsen.pulangMulai) statusKet = "Pulang Cepat";
+                    else if (jamStr > window.pengaturanJamAbsen.pulangAkhir) statusKet = "Di Luar Jadwal";
                 }
 
-                // SIMPAN ABSENSI KE FIREBASE
                 push(ref(db, "dataAbsensi"), {
                     waktu: skrg.toLocaleString('id-ID'),
                     nama: nama,
@@ -1133,7 +1127,7 @@
                     fotoWajah: window.fotoWajahTerambilData
                 });
 
-                alert(`Absensi ${tipeAbsen} Berhasil Disimpan ke Database! Status: ${statusKet}`);
+                alert(`Absensi ${tipeAbsen} Berhasil Disimpan ke Firebase! Status: ${statusKet}`);
             } else {
                 const ket = document.getElementById('form-keterangan').value;
                 
@@ -1155,7 +1149,6 @@
                     return;
                 }
 
-                // SIMPAN LAPORAN KE FIREBASE
                 push(ref(db, "dataLaporan"), {
                     tanggalJam: skrg.toLocaleString('id-ID'),
                     tanggalOnly: skrg.toLocaleDateString('id-ID'),
@@ -1169,7 +1162,7 @@
                     fotoAfter: window.tempFotoAfter
                 });
 
-                alert(`Laporan Modul ${modul} Berhasil Disimpan ke Database! [v]`);
+                alert(`Laporan Modul ${modul} Berhasil Disimpan ke Firebase! [v]`);
             }
 
             document.getElementById('form-laporan').reset();
