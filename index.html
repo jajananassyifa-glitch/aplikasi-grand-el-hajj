@@ -174,6 +174,8 @@
 
                 <!-- SECTION KETERANGAN & LOKASI PEKERJAAN JAMAK -->
                 <div id="field-laporan-pekerjaan" class="space-y-4">
+                    
+                    <!-- INPUT LOKASI / AREA MULTI-TEMPAT -->
                     <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-200 space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="block text-xs font-bold text-indigo-900">
@@ -228,6 +230,7 @@
                     <button onclick="mintaAksesGantiLogo()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
                         <i class="fa-solid fa-image mr-1.5"></i> Ganti Logo
                     </button>
+                    <!-- EXPORT SEMUA / GLOBAL -->
                     <button onclick="exportKeExcel()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
                         <i class="fa-solid fa-file-excel mr-1.5 text-emerald-400"></i> Export Semua Laporan
                     </button>
@@ -416,6 +419,12 @@
                     <h3 class="text-xs font-bold text-gray-700 mb-3">Statistik Laporan Masuk</h3>
                     <canvas id="chartBatang"></canvas>
                 </div>
+                <div class="bg-white p-4 rounded-xl shadow border">
+                    <h3 class="text-xs font-bold text-gray-700 mb-3">Persentase Modul</h3>
+                    <div class="w-48 mx-auto">
+                        <canvas id="chartLingkaran"></canvas>
+                    </div>
+                </div>
             </div>
 
             <!-- REKAPITULASI LAPORAN MODUL OTHER -->
@@ -525,37 +534,21 @@
         </div>
     </div>
 
-    <!-- ENGINE JAVASCRIPT FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyD9c5qPl9HGruxNfRvlOoqaxyxe2ZwDoaA",
-            authDomain: "aplikasi-grand-el-hajj.firebaseapp.com",
-            databaseURL: "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "aplikasi-grand-el-hajj",
-            storageBucket: "aplikasi-grand-el-hajj.firebasestorage.app",
-            messagingSenderId: "205554063779",
-            appId: "1:205554063779:web:c8e5de2802ad9824d16216"
-        };
-
-       const app = initializeApp(firebaseConfig)
-const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app");
-
+    <!-- ENGINE JAVASCRIPT -->
+    <script>
         const HOTEL_LAT = -6.175392;
         const HOTEL_LNG = 106.827153;
         const RADIUS_MAKSIMAL_KM = 0.5;
 
-        window.pengaturanJamAbsen = {
+        // PENGATURAN JAM ABSENSI DEFAULT
+        let pengaturanJamAbsen = {
             masukMulai: "06:00",
             masukAkhir: "09:00",
             pulangMulai: "16:00",
             pulangAkhir: "21:00"
         };
 
-        // DATA BAWAAN DEFAULT HANYA DIGUNAKAN JIKA FIREBASE KOSONG
-        const defaultKaryawan = [
+        let databaseKaryawan = [
             { 
                 nama: "Budi Santoso", 
                 kodeAwal: "001", 
@@ -578,71 +571,26 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
         ];
 
-        window.databaseKaryawan = [];
-        window.dataAbsensi = [];
-        window.dataLaporan = [];
-        window.currentUser = null;
-        window.targetModulDipilih = '';
-        window.fotoWajahTerambilData = null;
+        let dataAbsensi = [];
+        let dataLaporan = [];
+        let currentUser = null;
+        let targetModulDipilih = '';
+        let fotoWajahTerambilData = null;
         
-        window.pengumumanKhusus = {
+        let pengumumanKhusus = {
             TEKNISI: "Pengumuman Khusus Teknisi GRAND EL HAJJ: Perbaikan AC Room 204 & Pengecekan Panel Listrik Utama Didahulukan!",
             OB: "Pengumuman Khusus OB GRAND EL HAJJ: Pembersihan Area Lobby Utama & Polishing Lantai Koridor Lt. 2 Didahulukan!"
         };
 
-        window.tempFotoBefore = null;
-        window.tempFotoAfter = null;
-        window.fotoWajahTerambil = false;
-        window.lokasiValid = false;
-        window.tempFotoWajahAdmin = null;
-        window.streamAdminCam = null;
+        let tempFotoBefore = null;
+        let tempFotoAfter = null;
+        let fotoWajahTerambil = false;
+        let lokasiValid = false;
+        let tempFotoWajahAdmin = null;
+        let streamAdminCam = null;
 
-        // BACA DATA KARYAWAN REALTIME
-        onValue(ref(db, "dataKaryawan"), (snapshot) => {
-            const data = snapshot.val();
-            window.databaseKaryawan = [];
-            if (data) {
-                Object.keys(data).forEach((key) => {
-                    let item = data[key];
-                    item._key = key;
-                    window.databaseKaryawan.push(item);
-                });
-            } else {
-                // Inisialisasi awal ke Firebase jika database masih kosong
-                defaultKaryawan.forEach(k => push(ref(db, "dataKaryawan"), k));
-            }
-            renderTabelKaryawan();
-        });
-
-        // BACA DATA LAPORAN REALTIME
-        onValue(ref(db, "dataLaporan"), (snapshot) => {
-            const data = snapshot.val();
-            window.dataLaporan = [];
-            if (data) {
-                Object.keys(data).forEach((key) => {
-                    window.dataLaporan.push(data[key]);
-                });
-            }
-            if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
-                renderDasborAdmin();
-            }
-        });
-
-        // BACA DATA ABSENSI REALTIME
-        onValue(ref(db, "dataAbsensi"), (snapshot) => {
-            const data = snapshot.val();
-            window.dataAbsensi = [];
-            if (data) {
-                Object.keys(data).forEach((key) => {
-                    window.dataAbsensi.push(data[key]);
-                });
-            }
-            if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
-                renderDasborAdmin();
-            }
-        });
-
-        window.tambahInputLokasi = function() {
+        // FUNGSI DINAMIS TAMBAH INPUT LOKASI / MULTI-TEMPAT
+        function tambahInputLokasi() {
             const container = document.getElementById('container-lokasi-list');
             const itemCounts = container.children.length + 1;
             
@@ -656,38 +604,38 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             container.appendChild(div);
         }
 
-        window.reorderLokasiNumber = function() {
+        function reorderLokasiNumber() {
             const container = document.getElementById('container-lokasi-list');
             Array.from(container.children).forEach((child, index) => {
                 child.querySelector('span').innerText = (index + 1) + ".";
             });
         }
 
-        window.simpanPengaturanJam = function() {
-            window.pengaturanJamAbsen.masukMulai = document.getElementById('set-jam-masuk-mulai').value;
-            window.pengaturanJamAbsen.masukAkhir = document.getElementById('set-jam-masuk-akhir').value;
-            window.pengaturanJamAbsen.pulangMulai = document.getElementById('set-jam-pulang-mulai').value;
-            window.pengaturanJamAbsen.pulangAkhir = document.getElementById('set-jam-pulang-akhir').value;
+        function simpanPengaturanJam() {
+            pengaturanJamAbsen.masukMulai = document.getElementById('set-jam-masuk-mulai').value;
+            pengaturanJamAbsen.masukAkhir = document.getElementById('set-jam-masuk-akhir').value;
+            pengaturanJamAbsen.pulangMulai = document.getElementById('set-jam-pulang-mulai').value;
+            pengaturanJamAbsen.pulangAkhir = document.getElementById('set-jam-pulang-akhir').value;
 
             alert("Jadwal Jam Masuk & Pulang Berhasil Diperbarui!");
             updateInfoJadwalAbsenDisplay();
         }
 
-        window.updateInfoJadwalAbsenDisplay = function() {
+        function updateInfoJadwalAbsenDisplay() {
             const info = document.getElementById('info-jadwal-absen');
             if (info) {
-                info.innerText = `Jadwal Masuk: ${window.pengaturanJamAbsen.masukMulai} - ${window.pengaturanJamAbsen.masukAkhir} | Jadwal Pulang: ${window.pengaturanJamAbsen.pulangMulai} - ${window.pengaturanJamAbsen.pulangAkhir}`;
+                info.innerText = `Jadwal Masuk: ${pengaturanJamAbsen.masukMulai} - ${pengaturanJamAbsen.masukAkhir} | Jadwal Pulang: ${pengaturanJamAbsen.pulangMulai} - ${pengaturanJamAbsen.pulangAkhir}`;
             }
         }
 
-        window.mintaAksesGantiLogo = function() {
+        function mintaAksesGantiLogo() {
             document.getElementById('input-pass-logo').value = '';
             document.getElementById('form-auth-logo').classList.remove('hidden');
             document.getElementById('form-upload-logo').classList.add('hidden');
             document.getElementById('modal-ganti-logo').classList.remove('hidden');
         }
 
-        window.verifikasiPasswordLogo = function() {
+        function verifikasiPasswordLogo() {
             const pwd = document.getElementById('input-pass-logo').value;
             if (pwd === "logo@1234#") {
                 document.getElementById('form-auth-logo').classList.add('hidden');
@@ -697,7 +645,7 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
         }
 
-        window.simpanLogoBaru = function() {
+        function simpanLogoBaru() {
             const input = document.getElementById('file-logo-baru');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -722,23 +670,23 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
         }
 
-        window.tutupModalLogo = function() {
+        function tutupModalLogo() {
             document.getElementById('modal-ganti-logo').classList.add('hidden');
         }
 
-        window.bukaModalAdmin = function() {
+        function bukaModalAdmin() {
             const pass = prompt("Masukkan Kode Unik Admin:");
             if (pass === "@dmin@1234#") {
-                window.currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
+                currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
                 document.getElementById('splash-screen').classList.add('hidden');
                 const adminSec = document.getElementById('dasbor-admin-section');
                 adminSec.classList.remove('hidden');
                 document.getElementById('user-display').innerText = "Admin GRAND EL HAJJ";
                 
-                document.getElementById('set-jam-masuk-mulai').value = window.pengaturanJamAbsen.masukMulai;
-                document.getElementById('set-jam-masuk-akhir').value = window.pengaturanJamAbsen.masukAkhir;
-                document.getElementById('set-jam-pulang-mulai').value = window.pengaturanJamAbsen.pulangMulai;
-                document.getElementById('set-jam-pulang-akhir').value = window.pengaturanJamAbsen.pulangAkhir;
+                document.getElementById('set-jam-masuk-mulai').value = pengaturanJamAbsen.masukMulai;
+                document.getElementById('set-jam-masuk-akhir').value = pengaturanJamAbsen.masukAkhir;
+                document.getElementById('set-jam-pulang-mulai').value = pengaturanJamAbsen.pulangMulai;
+                document.getElementById('set-jam-pulang-akhir').value = pengaturanJamAbsen.pulangAkhir;
 
                 renderDasborAdmin();
                 adminSec.scrollIntoView({ behavior: 'smooth' });
@@ -747,16 +695,16 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
         }
 
-        window.nyalakanKameraAdmin = function() {
+        function nyalakanKameraAdmin() {
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
-                    window.streamAdminCam = stream;
+                    streamAdminCam = stream;
                     document.getElementById('admin-webcam').srcObject = stream;
                 })
                 .catch(err => alert("Gagal mengakses kamera admin!"));
         }
 
-        window.ambilFotoWajahAdmin = function() {
+        function ambilFotoWajahAdmin() {
             const video = document.getElementById('admin-webcam');
             const canvas = document.getElementById('admin-canvas-wajah');
             const imgPrev = document.getElementById('admin-prev-wajah');
@@ -765,35 +713,35 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            window.tempFotoWajahAdmin = canvas.toDataURL('image/png');
-            imgPrev.src = window.tempFotoWajahAdmin;
+            tempFotoWajahAdmin = canvas.toDataURL('image/png');
+            imgPrev.src = tempFotoWajahAdmin;
             imgPrev.classList.remove('hidden');
             
             document.getElementById('admin-status-wajah').innerText = "✓ Sampel Foto Verifikasi Wajah Berhasil Diambil!";
             document.getElementById('admin-status-wajah').className = "text-xs text-emerald-600 font-bold";
         }
 
-        window.previewImg = function(input, targetId) {
+        function previewImg(input, targetId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = document.getElementById(targetId);
                     img.src = e.target.result;
                     img.classList.remove('hidden');
-                    if (targetId === 'prev-before') window.tempFotoBefore = e.target.result;
-                    if (targetId === 'prev-after') window.tempFotoAfter = e.target.result;
+                    if (targetId === 'prev-before') tempFotoBefore = e.target.result;
+                    if (targetId === 'prev-after') tempFotoAfter = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        window.perbesarFoto = function(url) {
+        function perbesarFoto(url) {
             document.getElementById('img-lightbox').src = url;
             document.getElementById('modal-lightbox').classList.remove('hidden');
         }
 
-        window.lihatBiodata = function(index) {
-            const item = window.databaseKaryawan[index];
+        function lihatBiodata(index) {
+            const item = databaseKaryawan[index];
             document.getElementById('bio-nama').innerText = item.nama;
             document.getElementById('bio-jabatan').innerText = item.jabatan;
             document.getElementById('bio-divisi').innerText = "Divisi: " + item.role;
@@ -804,11 +752,10 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             document.getElementById('modal-biodata').classList.remove('hidden');
         }
 
-        window.renderTabelKaryawan = function() {
+        function renderTabelKaryawan() {
             const tbody = document.getElementById('tabel-karyawan-body');
-            if (!tbody) return;
             tbody.innerHTML = '';
-            window.databaseKaryawan.forEach((item, index) => {
+            databaseKaryawan.forEach((item, index) => {
                 const kodeTEK = "TEK" + item.kodeAwal;
                 const kodeCLE = "CLE" + item.kodeAwal;
                 const fotoWajah = item.fotoWajahSample || item.fotoProfil;
@@ -832,14 +779,14 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                             <span class="font-bold text-gray-800">${item.jabatan}</span> (${item.role})
                         </td>
                         <td class="p-2 text-center">
-                            <button onclick="hapusKaryawan('${item._key}')" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="hapusKaryawan(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        window.tambahKaryawan = function(e) {
+        function tambahKaryawan(e) {
             e.preventDefault();
             const nama = document.getElementById('add-nama').value.trim();
             const kodeAwal = document.getElementById('add-kode').value.trim();
@@ -849,52 +796,49 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             const alamat = document.getElementById('add-alamat').value.trim();
             const fileFoto = document.getElementById('add-fotoprofil').files[0];
 
-            if (!window.tempFotoWajahAdmin) {
+            if (!tempFotoWajahAdmin) {
                 alert("Harap ambil Sampel Foto Verifikasi Wajah via Kamera terlebih dahulu!");
                 return;
             }
 
-            if (window.databaseKaryawan.some(u => u.kodeAwal === kodeAwal)) {
+            if (databaseKaryawan.some(u => u.kodeAwal === kodeAwal)) {
                 alert("Kode Unik Awal sudah digunakan!");
                 return;
             }
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                const dataBaru = {
+                databaseKaryawan.push({
                     nama, kodeAwal, role, jabatan, tglLahir, alamat, 
                     fotoProfil: evt.target.result,
-                    fotoWajahSample: window.tempFotoWajahAdmin
-                };
-
-                push(ref(db, "dataKaryawan"), dataBaru);
-
+                    fotoWajahSample: tempFotoWajahAdmin
+                });
                 alert(`Karyawan ${nama} berhasil didaftarkan!`);
                 e.target.reset();
-                window.tempFotoWajahAdmin = null;
+                tempFotoWajahAdmin = null;
                 document.getElementById('admin-prev-wajah').classList.add('hidden');
                 document.getElementById('admin-status-wajah').innerText = "Sampel foto verifikasi wajah belum diambil.";
                 document.getElementById('admin-status-wajah').className = "text-xs text-amber-600 font-semibold";
                 
-                if (window.streamAdminCam) window.streamAdminCam.getTracks().forEach(t => t.stop());
+                if (streamAdminCam) streamAdminCam.getTracks().forEach(t => t.stop());
+                renderTabelKaryawan();
             }
             reader.readAsDataURL(fileFoto);
         }
 
-        window.hapusKaryawan = function(key) {
-            if (confirm("Apakah Anda yakin ingin menghapus karyawan ini?")) {
-                if (key) {
-                    remove(ref(db, "dataKaryawan/" + key));
-                }
+        function hapusKaryawan(index) {
+            if (confirm(`Apakah Anda yakin ingin menghapus karyawan "${databaseKaryawan[index].nama}"?`)) {
+                databaseKaryawan.splice(index, 1);
+                renderTabelKaryawan();
             }
         }
 
-        window.prosesMasukAwal = function() {
+        function prosesMasukAwal() {
             const kode = document.getElementById('input-kode-awal').value.trim();
-            const user = window.databaseKaryawan.find(u => u.kodeAwal === kode);
+            const user = databaseKaryawan.find(u => u.kodeAwal === kode);
 
             if (user) {
-                window.currentUser = user;
+                currentUser = user;
                 document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                 document.getElementById('splash-screen').classList.add('hidden');
             } else {
@@ -902,8 +846,8 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
         }
 
-        window.mintaVerifikasiFitur = function(modul) {
-            window.targetModulDipilih = modul;
+        function mintaVerifikasiFitur(modul) {
+            targetModulDipilih = modul;
             document.getElementById('input-kode-verifikasi').value = '';
             const petunjuk = document.getElementById('modal-petunjuk');
 
@@ -918,28 +862,28 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             document.getElementById('modal-verifikasi').classList.remove('hidden');
         }
 
-        window.batalVerifikasi = function() {
+        function batalVerifikasi() {
             document.getElementById('modal-verifikasi').classList.add('hidden');
         }
 
-        window.prosesVerifikasiModul = function() {
+        function prosesVerifikasiModul() {
             const input = document.getElementById('input-kode-verifikasi').value.trim();
             
             if (input === "@dmin@1234#") {
-                window.currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
+                currentUser = { nama: "Admin GRAND EL HAJJ", role: "Admin" };
                 document.getElementById('user-display').innerText = "Admin GRAND EL HAJJ";
                 document.getElementById('modal-verifikasi').classList.add('hidden');
-                bukaModulKerja(window.targetModulDipilih);
+                bukaModulKerja(targetModulDipilih);
                 return;
             }
 
-            if (window.targetModulDipilih === 'ABSENSI') {
-                const user = window.databaseKaryawan.find(u => 
+            if (targetModulDipilih === 'ABSENSI') {
+                const user = databaseKaryawan.find(u => 
                     u.kodeAwal === input || ("TEK" + u.kodeAwal) === input || ("CLE" + u.kodeAwal) === input
                 );
 
                 if (user) {
-                    window.currentUser = user;
+                    currentUser = user;
                     document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                     document.getElementById('modal-verifikasi').classList.add('hidden');
                     bukaModulKerja('ABSENSI');
@@ -947,29 +891,29 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                     alert("Kode Unik Salah untuk Modul Absensi!");
                 }
             } 
-            else if (window.targetModulDipilih === 'TEKNISI') {
-                const user = window.databaseKaryawan.find(u => ("TEK" + u.kodeAwal) === input);
+            else if (targetModulDipilih === 'TEKNISI') {
+                const user = databaseKaryawan.find(u => ("TEK" + u.kodeAwal) === input);
 
                 if (user) {
-                    window.currentUser = user;
+                    currentUser = user;
                     document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                     document.getElementById('modal-verifikasi').classList.add('hidden');
                     
-                    document.getElementById('main-running-text').innerText = window.pengumumanKhusus.TEKNISI;
+                    document.getElementById('main-running-text').innerText = pengumumanKhusus.TEKNISI;
                     tampilkanNotifTugasPrioritas('TEKNISI');
                 } else {
                     alert("AKSES DITOLAK! Wajib masukkan kode khusus TEK (contoh: TEK001).");
                 }
             } 
-            else if (window.targetModulDipilih === 'OB') {
-                const user = window.databaseKaryawan.find(u => ("CLE" + u.kodeAwal) === input);
+            else if (targetModulDipilih === 'OB') {
+                const user = databaseKaryawan.find(u => ("CLE" + u.kodeAwal) === input);
 
                 if (user) {
-                    window.currentUser = user;
+                    currentUser = user;
                     document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
                     document.getElementById('modal-verifikasi').classList.add('hidden');
                     
-                    document.getElementById('main-running-text').innerText = window.pengumumanKhusus.OB;
+                    document.getElementById('main-running-text').innerText = pengumumanKhusus.OB;
                     tampilkanNotifTugasPrioritas('OB');
                 } else {
                     alert("AKSES DITOLAK! Wajib masukkan kode khusus CLE (contoh: CLE001).");
@@ -977,24 +921,24 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
         }
 
-        window.tampilkanNotifTugasPrioritas = function(modul) {
-            document.getElementById('notif-tugas-isi').innerText = window.pengumumanKhusus[modul];
+        function tampilkanNotifTugasPrioritas(modul) {
+            document.getElementById('notif-tugas-isi').innerText = pengumumanKhusus[modul];
             document.getElementById('modal-notifikasi-tugas').classList.remove('hidden');
         }
 
-        window.tutupNotifTugas = function() {
+        function tutupNotifTugas() {
             document.getElementById('modal-notifikasi-tugas').classList.add('hidden');
-            bukaModulKerja(window.targetModulDipilih);
+            bukaModulKerja(targetModulDipilih);
         }
 
-        window.bukaModulKerja = function(modul) {
+        function bukaModulKerja(modul) {
             const container = document.getElementById('modul-container');
             const title = document.getElementById('modul-title');
             const secAbsen = document.getElementById('section-absensi-khusus');
             const fieldLaporan = document.getElementById('field-laporan-pekerjaan');
             
             document.getElementById('form-jenis-laporan').value = modul;
-            document.getElementById('form-nama-karyawan').value = window.currentUser ? window.currentUser.nama : "Karyawan";
+            document.getElementById('form-nama-karyawan').value = currentUser ? currentUser.nama : "Karyawan";
             
             const skrg = new Date();
             document.getElementById('form-waktu').value = skrg.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + " | " + skrg.toLocaleTimeString('id-ID');
@@ -1019,9 +963,9 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
         }
 
         let streamKamera = null;
-        window.nyalakanKamera = function() {
-            window.fotoWajahTerambil = false;
-            window.fotoWajahTerambilData = null;
+        function nyalakanKamera() {
+            fotoWajahTerambil = false;
+            fotoWajahTerambilData = null;
             document.getElementById('status-wajah').innerText = "Foto belum diambil";
             document.getElementById('status-wajah').className = "text-xs text-amber-600 mt-1 font-semibold";
             
@@ -1035,24 +979,24 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                 });
         }
 
-        window.matikanKamera = function() {
+        function matikanKamera() {
             if (streamKamera) streamKamera.getTracks().forEach(track => track.stop());
         }
 
-        window.ambilFotoWajah = function() {
+        function ambilFotoWajah() {
             const video = document.getElementById('webcam');
             const canvas = document.getElementById('canvas-wajah');
             canvas.width = video.videoWidth || 300;
             canvas.height = video.videoHeight || 200;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            window.fotoWajahTerambilData = canvas.toDataURL('image/png');
-            window.fotoWajahTerambil = true;
+            fotoWajahTerambilData = canvas.toDataURL('image/png');
+            fotoWajahTerambil = true;
             document.getElementById('status-wajah').innerText = "✓ Foto Wajah Berhasil Terverifikasi!";
             document.getElementById('status-wajah').className = "text-xs text-emerald-600 mt-1 font-bold";
         }
 
-        window.cekLokasiGPS = function() {
+        function cekLokasiGPS() {
             const statusLoc = document.getElementById('status-lokasi');
             statusLoc.innerText = "Mengecek lokasi...";
 
@@ -1063,16 +1007,16 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                     const jarak = hitungJarakKm(lat, lng, HOTEL_LAT, HOTEL_LNG);
 
                     if (jarak <= RADIUS_MAKSIMAL_KM) {
-                        window.lokasiValid = true;
+                        lokasiValid = true;
                         statusLoc.innerText = `✓ Terdeteksi di Area GRAND EL HAJJ (${Math.round(jarak*1000)}m)`;
                         statusLoc.className = "text-xs text-emerald-600 font-bold";
                     } else {
-                        window.lokasiValid = false;
+                        lokasiValid = false;
                         statusLoc.innerText = `✕ Di luar Area GRAND EL HAJJ (${jarak.toFixed(2)}km)`;
                         statusLoc.className = "text-xs text-red-600 font-bold";
                     }
                 }, () => {
-                    window.lokasiValid = true;
+                    lokasiValid = true;
                     statusLoc.innerText = "✓ Lokasi Terverifikasi (Area GRAND EL HAJJ)";
                     statusLoc.className = "text-xs text-emerald-600 font-bold";
                 });
@@ -1089,12 +1033,13 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        window.tutupModul = function() {
+        function tutupModul() {
             matikanKamera();
             document.getElementById('modul-container').classList.add('hidden');
         }
 
-        window.simpanLaporan = function(e) {
+        // SIMPAN LAPORAN DENGAN INTEGRASI LOKASI JAMAK & CEKLIS TERKIRIM
+        function simpanLaporan(e) {
             e.preventDefault();
             const modul = document.getElementById('form-jenis-laporan').value;
             const nama = document.getElementById('form-nama-karyawan').value;
@@ -1102,7 +1047,7 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             const jamStr = String(skrg.getHours()).padStart(2, '0') + ":" + String(skrg.getMinutes()).padStart(2, '0');
 
             if (modul === 'ABSENSI') {
-                if (!window.fotoWajahTerambil || !window.lokasiValid) {
+                if (!fotoWajahTerambil || !lokasiValid) {
                     alert("Verifikasi Wajah dan Lokasi GPS Wajib Dilakukan!");
                     return;
                 }
@@ -1111,26 +1056,33 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                 let statusKet = "Tepat Waktu";
 
                 if (tipeAbsen === 'MASUK') {
-                    if (jamStr < window.pengaturanJamAbsen.masukMulai) statusKet = "Terlalu Awal";
-                    else if (jamStr > window.pengaturanJamAbsen.masukAkhir) statusKet = "Terlambat";
+                    if (jamStr < pengaturanJamAbsen.masukMulai) {
+                        statusKet = "Terlalu Awal";
+                    } else if (jamStr > pengaturanJamAbsen.masukAkhir) {
+                        statusKet = "Terlambat";
+                    }
                 } else if (tipeAbsen === 'PULANG') {
-                    if (jamStr < window.pengaturanJamAbsen.pulangMulai) statusKet = "Pulang Cepat";
-                    else if (jamStr > window.pengaturanJamAbsen.pulangAkhir) statusKet = "Di Luar Jadwal";
+                    if (jamStr < pengaturanJamAbsen.pulangMulai) {
+                        statusKet = "Pulang Cepat";
+                    } else if (jamStr > pengaturanJamAbsen.pulangAkhir) {
+                        statusKet = "Di Luar Jadwal";
+                    }
                 }
 
-                push(ref(db, "dataAbsensi"), {
+                dataAbsensi.push({
                     waktu: skrg.toLocaleString('id-ID'),
                     nama: nama,
-                    jabatan: window.currentUser ? (window.currentUser.jabatan || window.currentUser.role) : "-",
+                    jabatan: currentUser ? (currentUser.jabatan || currentUser.role) : "-",
                     tipe: tipeAbsen,
                     statusWaktu: statusKet,
-                    fotoWajah: window.fotoWajahTerambilData
+                    fotoWajah: fotoWajahTerambilData
                 });
 
-                alert(`Absensi ${tipeAbsen} Berhasil Disimpan ke Firebase! Status: ${statusKet}`);
+                alert(`Absensi ${tipeAbsen} Berhasil Disimpan! Status: ${statusKet}`);
             } else {
                 const ket = document.getElementById('form-keterangan').value;
                 
+                // KUMPULKAN MULTI LOKASI
                 const inputLokasiElements = document.getElementsByName('input-lokasi-item');
                 let listLokasiArray = [];
                 for (let el of inputLokasiElements) {
@@ -1144,12 +1096,12 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                     return;
                 }
 
-                if (!window.tempFotoBefore || !window.tempFotoAfter) {
+                if (!tempFotoBefore || !tempFotoAfter) {
                     alert("Wajib melampirkan Foto Sebelum (Before) DAN Foto Sesudah (After)!");
                     return;
                 }
 
-                push(ref(db, "dataLaporan"), {
+                dataLaporan.push({
                     tanggalJam: skrg.toLocaleString('id-ID'),
                     tanggalOnly: skrg.toLocaleDateString('id-ID'),
                     waktuOnly: skrg.toLocaleTimeString('id-ID'),
@@ -1158,17 +1110,18 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                     lokasiArray: listLokasiArray,
                     keterangan: ket,
                     statusCeklis: "[v] Terkirim & Selesai",
-                    fotoBefore: window.tempFotoBefore,
-                    fotoAfter: window.tempFotoAfter
+                    fotoBefore: tempFotoBefore,
+                    fotoAfter: tempFotoAfter
                 });
 
-                alert(`Laporan Modul ${modul} Berhasil Disimpan ke Firebase! [v]`);
+                alert(`Laporan Modul ${modul} Berhasil Disimpan & Diterima! [v]`);
             }
 
             document.getElementById('form-laporan').reset();
             document.getElementById('prev-before').classList.add('hidden');
             document.getElementById('prev-after').classList.add('hidden');
             
+            // RESET CONTAINER LOKASI BACK TO 1 FIELD
             document.getElementById('container-lokasi-list').innerHTML = `
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-indigo-700 w-5">1.</span>
@@ -1176,8 +1129,8 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                 </div>
             `;
 
-            window.tempFotoBefore = null;
-            window.tempFotoAfter = null;
+            tempFotoBefore = null;
+            tempFotoAfter = null;
             tutupModul();
 
             if (!document.getElementById('dasbor-admin-section').classList.contains('hidden')) {
@@ -1185,13 +1138,15 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
         }
 
-        window.renderDasborAdmin = function() {
+        // RENDER DATA DI DASBOR ADMIN
+        function renderDasborAdmin() {
             renderTabelKaryawan();
             
+            // 1. RENDER TABEL ABSENSI
             const tbodyAbsen = document.getElementById('tabel-absensi-body');
             tbodyAbsen.innerHTML = '';
 
-            window.dataAbsensi.forEach(item => {
+            dataAbsensi.forEach(item => {
                 let badgeStatus = 'bg-emerald-100 text-emerald-800 border-emerald-300';
                 if (item.statusWaktu === 'Terlambat' || item.statusWaktu === 'Di Luar Jadwal') {
                     badgeStatus = 'bg-red-100 text-red-800 border-red-300';
@@ -1223,20 +1178,21 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                 `;
             });
 
+            // 2. RENDER TABEL LAPORAN PEKERJAAN BEFORE/AFTER & MULTI LOKASI
             const tbodyLaporan = document.getElementById('tabel-laporan-body');
             tbodyLaporan.innerHTML = '';
-            let cntAbsen = window.dataAbsensi.length, cntTeknisi = 0, cntOB = 0;
+            let cntAbsen = dataAbsensi.length, cntTeknisi = 0, cntOB = 0;
 
-            window.dataLaporan.forEach(item => {
+            dataLaporan.forEach(item => {
                 if (item.modul === 'TEKNISI') cntTeknisi++;
                 if (item.modul === 'OB') cntOB++;
 
-                const displayLokasi = item.lokasiArray ? item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('<br>') : '-';
+                const displayLokasi = item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('<br>');
 
-                const imgBeforeHtml = (item.fotoBefore && item.fotoBefore !== '-') 
+                const imgBeforeHtml = item.fotoBefore !== '-' 
                     ? `<img src="${item.fotoBefore}" onclick="perbesarFoto('${item.fotoBefore}')" class="h-12 w-12 object-cover rounded mx-auto cursor-pointer border">`
                     : '-';
-                const imgAfterHtml = (item.fotoAfter && item.fotoAfter !== '-') 
+                const imgAfterHtml = item.fotoAfter !== '-' 
                     ? `<img src="${item.fotoAfter}" onclick="perbesarFoto('${item.fotoAfter}')" class="h-12 w-12 object-cover rounded mx-auto cursor-pointer border">`
                     : '-';
 
@@ -1258,6 +1214,7 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
                 `;
             });
 
+            // CHART STATISTIK
             const ctxB = document.getElementById('chartBatang').getContext('2d');
             if (window.chartB) window.chartB.destroy();
             window.chartB = new Chart(ctxB, {
@@ -1267,8 +1224,9 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             });
         }
 
-        window.exportLaporanDivisiKeExcel = function(targetDivisi) {
-            const dataFiltered = window.dataLaporan.filter(item => item.modul === targetDivisi);
+        // EKSPOR LAPORAN KHUSUS PER DIVISI (TEKNISI / OB) KE EXCEL
+        function exportLaporanDivisiKeExcel(targetDivisi) {
+            const dataFiltered = dataLaporan.filter(item => item.modul === targetDivisi);
 
             if (dataFiltered.length === 0) {
                 alert(`Belum ada data laporan untuk Divisi ${targetDivisi}!`);
@@ -1276,8 +1234,8 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             }
 
             const excelData = dataFiltered.map((item, index) => {
-                const totalTempat = item.lokasiArray ? item.lokasiArray.length + " Tempat" : "1 Tempat";
-                const detailTempatFormatted = item.lokasiArray ? item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('; ') : '-';
+                const totalTempat = item.lokasiArray.length + " Tempat";
+                const detailTempatFormatted = item.lokasiArray.map((loc, idx) => `${idx + 1}. ${loc}`).join('; ');
 
                 return {
                     "NO": index + 1,
@@ -1299,13 +1257,14 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             XLSX.writeFile(workbook, `Laporan_${targetDivisi}_GRAND_EL_HAJJ.xlsx`);
         }
 
-        window.exportAbsensiKeExcel = function() {
-            if (window.dataAbsensi.length === 0) {
+        // EKSPOR KHUSUS DATA ABSENSI KE EXCEL
+        function exportAbsensiKeExcel() {
+            if (dataAbsensi.length === 0) {
                 alert("Belum ada data absensi untuk diekspor!");
                 return;
             }
 
-            const excelData = window.dataAbsensi.map((item, index) => ({
+            const excelData = dataAbsensi.map((item, index) => ({
                 "NO": index + 1,
                 "WAKTU_TRANSAKSI": item.waktu,
                 "NAMA_KARYAWAN": item.nama,
@@ -1320,19 +1279,20 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             XLSX.writeFile(workbook, `Rekap_Absensi_GRAND_EL_HAJJ.xlsx`);
         }
 
-        window.exportKeExcel = function() {
-            if (window.dataLaporan.length === 0) {
+        // EKSPOR SEMUA LAPORAN PEKERJAAN KE EXCEL
+        function exportKeExcel() {
+            if (dataLaporan.length === 0) {
                 alert("Belum ada laporan pekerjaan yang masuk!");
                 return;
             }
 
-            const excelData = window.dataLaporan.map((item, index) => ({
+            const excelData = dataLaporan.map((item, index) => ({
                 "NO": index + 1,
                 "WAKTU_INPUT": item.tanggalJam,
                 "NAMA_KARYAWAN": item.nama,
                 "DIVISI": item.modul,
-                "JUMLAH_LOKASI": item.lokasiArray ? item.lokasiArray.length + " Tempat" : "1 Tempat",
-                "DETAIL_LOKASI": item.lokasiArray ? item.lokasiArray.join('; ') : '-',
+                "JUMLAH_LOKASI": item.lokasiArray.length + " Tempat",
+                "DETAIL_LOKASI": item.lokasiArray.join('; '),
                 "KETERANGAN_PEKERJAAN": item.keterangan,
                 "STATUS_CEKLIS": item.statusCeklis
             }));
@@ -1343,63 +1303,25 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             XLSX.writeFile(workbook, `Laporan_Keseluruhan_GRAND_EL_HAJJ.xlsx`);
         }
 
-        window.ubahRunningText = function() {
+        function ubahRunningText() {
             const target = document.getElementById('admin-target-divisi').value;
             const teks = document.getElementById('admin-running-text').value.trim();
             if (teks) {
-                window.pengumumanKhusus[target] = teks;
+                pengumumanKhusus[target] = teks;
                 alert(`Pengumuman khusus divisi ${target} berhasil diperbarui!`);
                 document.getElementById('admin-running-text').value = '';
             }
         }
 
-        window.keluarAplikasi = function() {
-            window.currentUser = null;
+        function keluarAplikasi() {
+            currentUser = null;
             matikanKamera();
-            if (window.streamAdminCam) window.streamAdminCam.getTracks().forEach(t => t.stop());
+            if (streamAdminCam) streamAdminCam.getTracks().forEach(t => t.stop());
             document.getElementById('input-kode-awal').value = '';
             document.getElementById('dasbor-admin-section').classList.add('hidden');
             tutupModul();
             document.getElementById('splash-screen').classList.remove('hidden');
         }
-
-    window.mintaAksesGantiBackdrop = function() {
-    const pwd = prompt("Masukkan Kata Sandi Khusus Backdrop:");
-    if (pwd === "backdrop@1234#") {
-        document.getElementById('input-backdrop-file').click();
-    } else if (pwd !== null) {
-        alert("Kata sandi salah!");
-    }
-};
-
-window.prosesGantiBackdrop = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-        alert("Ukuran gambar terlalu besar! Maksimal 3MB.");
-        return;
-    }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const imageUrl = e.target.result;
-        document.body.style.backgroundImage = `url('${imageUrl}')`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundAttachment = 'fixed';
-        localStorage.setItem('custom_backdrop_url', imageUrl);
-        alert("Backdrop berhasil diperbarui!");
-    };
-    reader.readAsDataURL(file);
-};
-
-// Auto muat backdrop saat halaman dibuka
-const savedBackdrop = localStorage.getItem('custom_backdrop_url');
-if (savedBackdrop) {
-    document.body.style.backgroundImage = `url('${savedBackdrop}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-}
     </script>
 </body>
 </html>
