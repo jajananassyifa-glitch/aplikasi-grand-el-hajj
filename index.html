@@ -1322,7 +1322,8 @@
             tutupModul();
             document.getElementById('splash-screen').classList.remove('hidden');
         }
-       <script type="module">
+       <!-- SCRIPT FIREBASE & FUNGSI GLOBAL -->
+    <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
       import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -1337,12 +1338,31 @@
         measurementId: "G-NX1GJ7958X"
       };
 
+      // Inisialisasi Firebase
       const app = initializeApp(firebaseConfig);
-      
-      // Mendaftarkan variabel & fungsi Firebase ke Window agar bisa diakses global oleh tombol HTML
       window.db = getFirestore(app);
-      window.firestoreTools = { collection, addDoc, onSnapshot, doc, deleteDoc, setDoc };
 
+      // Mendaftarkan fungsi tombol ke Window (Global) agar HTML bisa memanggilnya
+      window.bukaModalAdmin = function() {
+        const splash = document.getElementById('splash-screen');
+        if (splash) splash.classList.add('hidden');
+        const dasbor = document.getElementById('dasbor-admin-section');
+        if (dasbor) dasbor.classList.remove('hidden');
+      };
+
+      window.prosesMasukAwal = function() {
+        const inputKode = document.getElementById('input-kode-awal');
+        if (inputKode && inputKode.value.trim() !== '') {
+          document.getElementById('splash-screen').classList.add('hidden');
+        } else {
+          alert('Masukkan Kode Unik terlebih dahulu!');
+        }
+      };
+
+      window.keluarAplikasi = function() {
+        const splash = document.getElementById('splash-screen');
+        if (splash) splash.classList.remove('hidden');
+      };
 </script>
        
 </body>
