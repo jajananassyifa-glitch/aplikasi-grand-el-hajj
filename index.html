@@ -1424,42 +1424,45 @@
         }
     });
     window.mintaAksesGantiBackdrop = function() {
-    const pwd = prompt("Masukkan Kata Sandi Khusus Backdrop:");
-    if (pwd === "backdrop@1234#") {
-        document.getElementById('input-backdrop-file').click();
-    } else if (pwd !== null) {
-        alert("Kata sandi salah!");
-    }
-};
-
-window.prosesGantiBackdrop = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-        alert("Ukuran gambar terlalu besar! Maksimal 3MB.");
-        return;
+        const pwd = prompt("Masukkan Kata Sandi Khusus Backdrop:");
+        if (pwd === "backdrop@1234#") {
+            const input = document.getElementById('input-backdrop-file');
+            if (input) input.click();
+        } else if (pwd !== null) {
+            alert("Kata sandi salah!");
+        }
     };
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const imageUrl = e.target.result;
-        document.body.style.backgroundImage = `url('${imageUrl}')`;
+
+    window.prosesGantiBackdrop = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 3 * 1024 * 1024) {
+            alert("Ukuran gambar terlalu besar! Maksimal 3MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageUrl = e.target.result;
+            document.body.style.backgroundImage = "url('" + imageUrl + "')";
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+            localStorage.setItem('custom_backdrop_url', imageUrl);
+            alert("Backdrop berhasil diperbarui!");
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Auto muat backdrop saat halaman dibuka
+    const savedBackdrop = localStorage.getItem('custom_backdrop_url');
+    if (savedBackdrop) {
+        document.body.style.backgroundImage = "url('" + savedBackdrop + "')";
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundAttachment = 'fixed';
-        localStorage.setItem('custom_backdrop_url', imageUrl);
-        alert("Backdrop berhasil diperbarui!");
-    };
-    reader.readAsDataURL(file);
-};
-
-// Auto muat backdrop saat halaman dibuka
-const savedBackdrop = localStorage.getItem('custom_backdrop_url');
-if (savedBackdrop) {
-    document.body.style.backgroundImage = `url('${savedBackdrop}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-}
-    </script>
+    }
+</script>
 </body>
 </html>
