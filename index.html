@@ -525,23 +525,23 @@
         </div>
     </div>
 
-    <!-- ENGINE JAVASCRIPT FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+   <!-- ENGINE JAVASCRIPT FIREBASE -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD9c5qPl9HGruxNfRvlOoqaxyxe2ZwDoaA",
-            authDomain: "aplikasi-grand-el-hajj.firebaseapp.com",
-            databaseURL: "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "aplikasi-grand-el-hajj",
-            storageBucket: "aplikasi-grand-el-hajj.firebasestorage.app",
-            messagingSenderId: "205554063779",
-            appId: "1:205554063779:web:c8e5de2802ad9824d16216"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyD9c5qPl9HGruxNfRvlOoqaxyxe2ZwDoaA",
+        authDomain: "aplikasi-grand-el-hajj.firebaseapp.com",
+        databaseURL: "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "aplikasi-grand-el-hajj",
+        storageBucket: "aplikasi-grand-el-hajj.firebasestorage.app",
+        messagingSenderId: "205554063779",
+        appId: "1:205554063779:web:c8e5de2802ad9824d16216"
+    };
 
-       const app = initializeApp(firebaseConfig)
-const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app, firebaseConfig.databaseURL);
 
         const HOTEL_LAT = -6.175392;
         const HOTEL_LNG = 106.827153;
@@ -1362,7 +1362,45 @@ const db = getDatabase(app, "https://aplikasi-grand-el-hajj-default-rtdb.asia-so
             tutupModul();
             document.getElementById('splash-screen').classList.remove('hidden');
         }
+// FITUR SIMPAN & MUAT LOGO AUTOMATIS
+    function tampilkanLogo(url) {
+        const imgSplash = document.getElementById('img-logo-splash');
+        const iconSplash = document.getElementById('icon-default-splash');
+        if (imgSplash && url) {
+            imgSplash.src = url;
+            imgSplash.classList.remove('hidden');
+            if (iconSplash) iconSplash.classList.add('hidden');
+        }
+    }
 
+    window.prosesGantiLogo = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            alert("Ukuran gambar maksimal 2MB.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const logoUrl = e.target.result;
+            tampilkanLogo(logoUrl);
+            localStorage.setItem('custom_app_logo', logoUrl);
+            set(ref(db, 'pengaturan/logo'), logoUrl);
+            alert("Logo berhasil diperbarui!");
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const savedLogo = localStorage.getItem('custom_app_logo');
+    if (savedLogo) tampilkanLogo(savedLogo);
+
+    onValue(ref(db, 'pengaturan/logo'), (snapshot) => {
+        const remoteLogo = snapshot.val();
+        if (remoteLogo) {
+            tampilkanLogo(remoteLogo);
+            localStorage.setItem('custom_app_logo', remoteLogo);
+        }
+    });
     window.mintaAksesGantiBackdrop = function() {
     const pwd = prompt("Masukkan Kata Sandi Khusus Backdrop:");
     if (pwd === "backdrop@1234#") {
