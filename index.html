@@ -1373,20 +1373,42 @@
         }
     }
 
-    window.prosesGantiLogo = function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        if (file.size > 2 * 1024 * 1024) {
-            alert("Ukuran gambar maksimal 2MB.");
+   window.simpanLogoBaru = function() {
+        const inputLogo = document.getElementById('file-logo-baru');
+        if (!inputLogo || !inputLogo.files[0]) {
+            alert("Pilih file logo terlebih dahulu!");
             return;
         }
+
+        const file = inputLogo.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            alert("Ukuran gambar terlalu besar! Maksimal 2MB.");
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = function(e) {
             const logoUrl = e.target.result;
+            
+            // 1. Tampilkan ke UI
             tampilkanLogo(logoUrl);
+
+            // 2. Simpan ke LocalStorage
             localStorage.setItem('custom_app_logo', logoUrl);
-            set(ref(db, 'pengaturan/logo'), logoUrl);
-            alert("Logo berhasil diperbarui!");
+
+            // 3. Simpan ke Firebase
+            set(ref(db, 'pengaturan/logo'), logoUrl)
+                .then(() => {
+                    alert("Logo berhasil diperbarui dan tersimpan!");
+                    if (typeof tutupModalLogo === 'function') tutupModalLogo();
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert("Logo tersimpan di browser lokal, gagal sinkron ke Firebase.");
+                });
+        };
+        reader.readAsDataURL(file);
+    };
         };
         reader.readAsDataURL(file);
     };
