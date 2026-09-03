@@ -9,11 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .bg-hotel {
-            background-size: cover;
-            background-position: center;
-            transition: background-image 0.5s ease-in-out;
-        }
+        .bg-hotel { background-size: cover; background-position: center; transition: background-image 0.5s ease-in-out; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-800 min-h-screen">
@@ -29,7 +25,7 @@
         <div class="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 max-w-md w-full shadow-2xl flex flex-col items-center">
             <div id="logo-container-splash" class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-4 shadow-lg overflow-hidden border-2 border-white">
                 <i id="icon-default-splash" class="fa-solid fa-hotel text-3xl text-white"></i>
-                <img id="img-logo-splash" class="w-full h-full object-cover hidden" alt="Logo Perusahaan">
+                <img id="img-logo-splash" class="w-full h-full object-cover hidden" alt="Logo">
             </div>
             
             <h1 class="text-2xl font-black mb-1 tracking-wider text-amber-300">GRAND EL HAJJ</h1>
@@ -71,8 +67,80 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-6">
-        <!-- DASBOR ADMIN -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        <!-- MODUL WORKER / KARYAWAN -->
+        <div id="section-modul" class="hidden space-y-6">
+            <!-- PENGUMUMAN / RUNNING TEXT -->
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm flex items-center justify-between">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <i class="fa-solid fa-bullhorn text-amber-600 text-lg animate-bounce"></i>
+                    <marquee id="running-text-display" class="text-xs font-bold text-amber-900">Selamat datang di Sistem Operasional GRAND EL HAJJ!</marquee>
+                </div>
+            </div>
+
+            <!-- FORM LAPORAN WORKER -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border space-y-4">
+                <h3 id="form-title" class="text-base font-bold text-slate-800 border-b pb-3 flex items-center">
+                    <i class="fa-solid fa-clipboard-list mr-2 text-blue-600"></i> Form Laporan Operasional
+                </h3>
+                
+                <form id="form-laporan" onsubmit="simpanLaporan(event)" class="p-2 space-y-4">
+                    <input type="hidden" id="form-jenis-laporan">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Nama Karyawan</label>
+                            <input type="text" id="form-nama-karyawan" readonly class="w-full bg-gray-100 border rounded-lg p-2.5 text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Tanggal & Waktu Realtime</label>
+                            <input type="text" id="form-waktu" readonly class="w-full bg-gray-100 border rounded-lg p-2.5 text-xs text-gray-500">
+                        </div>
+                    </div>
+
+                    <!-- SUB-MODUL KHUSUS ABSENSI -->
+                    <div id="section-absensi-khusus" class="hidden space-y-4 bg-slate-50 p-4 rounded-xl border">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Tipe Absensi</label>
+                            <select id="form-tipe-absensi" class="w-full border rounded-lg p-2 text-xs font-bold text-slate-700">
+                                <option value="MASUK">Absen Masuk</option>
+                                <option value="PULANG">Absen Pulang</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- SUB-MODUL CHECKLIST OB / CLEANING SERVICE -->
+                    <div id="section-checklist-ob" class="hidden space-y-3 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
+                        <label class="block text-xs font-bold text-amber-900">Checklist Kebersihan Area:</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Sapu & Pel" class="chk-ob"> <span>Sapu & Pel Floor</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Toilet Clean" class="chk-ob"> <span>Sanitasi Toilet</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Kaca & Jendela" class="chk-ob"> <span>Pembersihan Kaca</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Sampah Diangkut" class="chk-ob"> <span>Buang Sampah</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Disinfektan" class="chk-ob"> <span>Disinfeksi Area</span></label>
+                        </div>
+                    </div>
+
+                    <!-- LOKASI & DETAIL -->
+                    <div id="section-detail-kerja" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Detail Lokasi / Area Kerja</label>
+                            <input type="text" id="form-lokasi" placeholder="Contoh: Kamar 301 / Lobby Utama" class="w-full border rounded-lg p-2.5 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Detail Pekerjaan / Temuan Masalah</label>
+                            <textarea id="form-keterangan" rows="3" placeholder="Tuliskan keterangan detail..." class="w-full border rounded-lg p-2.5 text-xs"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> KIRIM LAPORAN REALTIME
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- DASBOR UTAMA ADMIN -->
         <div id="dasbor-admin-section" class="space-y-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 gap-3">
                 <h2 class="text-xl font-bold text-slate-800">Dasbor Utama Admin - GRAND EL HAJJ</h2>
@@ -80,6 +148,29 @@
                     <button onclick="mintaAksesGantiLogo()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
                         <i class="fa-solid fa-image mr-1.5"></i> Ganti Logo
                     </button>
+                    <button onclick="exportKeExcel('Teknisi')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i> Excel Teknisi
+                    </button>
+                    <button onclick="exportKeExcel('OB')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i> Excel OB
+                    </button>
+                    <button onclick="exportKeExcel('Semua')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i> Excel Total
+                    </button>
+                </div>
+            </div>
+
+            <!-- PERUBAHAN RUNNING TEXT / PENGUMUMAN -->
+            <div class="bg-white p-4 rounded-xl shadow border space-y-3">
+                <h3 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-bullhorn mr-1.5 text-amber-500"></i> Pengaturan Running Text Divisi</h3>
+                <div class="flex gap-2">
+                    <select id="admin-target-divisi" class="border rounded px-3 py-1.5 text-xs font-bold text-slate-700">
+                        <option value="Semua">Semua Divisi</option>
+                        <option value="Teknisi">Teknisi</option>
+                        <option value="OB">OB / CS</option>
+                    </select>
+                    <input type="text" id="admin-running-text" placeholder="Tuliskan teks pengumuman baru..." class="flex-1 border rounded px-3 py-1.5 text-xs">
+                    <button onclick="ubahRunningText()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-4 py-1.5 rounded font-bold">Update</button>
                 </div>
             </div>
 
@@ -133,6 +224,36 @@
                     </table>
                 </div>
             </div>
+
+            <!-- TABEL REKAP LAPORAN MASUK REALTIME -->
+            <div class="bg-white p-5 rounded-xl shadow border space-y-4">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center">
+                        <i class="fa-solid fa-list-check mr-2 text-blue-600"></i> Rekap Semua Laporan Masuk
+                    </h3>
+                    <select id="filter-divisi-laporan" onchange="renderTabelLaporan()" class="border rounded px-2 py-1 text-xs font-bold text-slate-700">
+                        <option value="Semua">Tampilkan Semua Divisi</option>
+                        <option value="Teknisi">Filter Teknisi</option>
+                        <option value="OB">Filter OB / CS</option>
+                        <option value="Umum">Filter Umum</option>
+                    </select>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-200 text-slate-700 border-b">
+                                <th class="p-2">Tanggal & Waktu</th>
+                                <th class="p-2">Nama</th>
+                                <th class="p-2">Divisi</th>
+                                <th class="p-2">Lokasi</th>
+                                <th class="p-2">Detail Laporan</th>
+                                <th class="p-2 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-laporan-body"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -151,7 +272,7 @@
         </div>
     </div>
 
-    <!-- SKRIP UTAMA & FIREBASE (INTEGRASI PENUH) -->
+    <!-- SCRIPT FIREBASE & LOGIK LENGKAP UTUH -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -170,21 +291,46 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- FUNGSI NAVIGASI GLOBAL ---
+        let dataKaryawanLocal = [];
+        let dataLaporanLocal = [];
+        let userLoginAktif = null;
+
+        // FUNGSI NAVIGASI GLOBAL UNTUK HTML
         window.bukaModalAdmin = function() {
             document.getElementById('splash-screen').classList.add('hidden');
+            document.getElementById('section-modul').classList.add('hidden');
+            document.getElementById('dasbor-admin-section').classList.remove('hidden');
+            document.getElementById('user-display').innerText = "Admin Utama";
         };
 
         window.prosesMasukAwal = function() {
-            const input = document.getElementById('input-kode-awal').value.trim();
-            if (input !== '') {
+            const kode = document.getElementById('input-kode-awal').value.trim();
+            if (!kode) return alert('Masukkan Kode Unik!');
+
+            const ditemukan = dataKaryawanLocal.find(k => k.kode === kode);
+            if (ditemukan) {
+                userLoginAktif = ditemukan;
                 document.getElementById('splash-screen').classList.add('hidden');
+                document.getElementById('dasbor-admin-section').classList.add('hidden');
+                document.getElementById('section-modul').classList.remove('hidden');
+                
+                document.getElementById('user-display').innerText = `${ditemukan.nama} (${ditemukan.role})`;
+                document.getElementById('form-nama-karyawan').value = ditemukan.nama;
+                document.getElementById('form-jenis-laporan').value = ditemukan.role;
+
+                // Atur visibilitas fitur modul khusus
+                document.getElementById('section-checklist-ob').classList.toggle('hidden', ditemukan.role !== 'OB');
+                document.getElementById('section-absensi-khusus').classList.toggle('hidden', ditemukan.role !== 'Umum');
+
+                updateJam();
             } else {
-                alert('Masukkan Kode Unik terlebih dahulu!');
+                alert('Kode Unik tidak terdaftar! Silakan minta Admin untuk mendaftarkan Anda.');
             }
         };
 
         window.keluarAplikasi = function() {
+            userLoginAktif = null;
+            document.getElementById('input-kode-awal').value = '';
             document.getElementById('splash-screen').classList.remove('hidden');
         };
 
@@ -196,15 +342,20 @@
             document.getElementById('modal-ganti-logo').classList.add('hidden');
         };
 
-        // --- SINKRONISASI KARYAWAN REALTIME ---
-        const karyawanRef = collection(db, "karyawan");
+        function updateJam() {
+            const now = new Date();
+            const format = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
+            const el = document.getElementById('form-waktu');
+            if (el) el.value = format;
+        }
+        setInterval(updateJam, 1000);
 
-        onSnapshot(karyawanRef, (snapshot) => {
-            const listKaryawan = [];
-            snapshot.forEach((doc) => {
-                listKaryawan.push({ id: doc.id, ...doc.data() });
-            });
-            renderTabelKaryawan(listKaryawan);
+        // REALTIME FIREBASE - SINKRONISASI KARYAWAN
+        const refKaryawan = collection(db, "karyawan");
+        onSnapshot(refKaryawan, (snap) => {
+            dataKaryawanLocal = [];
+            snap.forEach(doc => dataKaryawanLocal.push({ id: doc.id, ...doc.data() }));
+            renderTabelKaryawan();
         });
 
         document.getElementById('form-tambah-karyawan').addEventListener('submit', async (e) => {
@@ -215,51 +366,152 @@
             const role = document.getElementById('add-role').value;
 
             try {
-                await addDoc(karyawanRef, { nama, kode, jabatan, role });
+                await addDoc(refKaryawan, { nama, kode, jabatan, role });
                 e.target.reset();
-                alert('Karyawan berhasil disimpan!');
-            } catch (err) {
-                console.error("Error:", err);
-            }
+                alert('Data Karyawan Berhasil Disimpan!');
+            } catch (err) { alert('Gagal menyimpan: ' + err.message); }
         });
 
         window.hapusKaryawan = async function(id) {
-            if (confirm('Yakin ingin menghapus karyawan ini?')) {
-                try {
-                    await deleteDoc(doc(db, "karyawan", id));
-                } catch (err) {
-                    console.error("Error:", err);
-                }
+            if (confirm('Hapus karyawan ini?')) {
+                await deleteDoc(doc(db, "karyawan", id));
             }
         };
 
-        function renderTabelKaryawan(list) {
+        function renderTabelKaryawan() {
             const tbody = document.getElementById('tabel-karyawan-body');
             tbody.innerHTML = '';
-            list.forEach((k) => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-2 font-bold">${k.nama}</td>
-                    <td class="p-2">${k.kode}</td>
-                    <td class="p-2">${k.jabatan}</td>
-                    <td class="p-2">${k.role}</td>
-                    <td class="p-2 text-center">
-                        <button onclick="hapusKaryawan('${k.id}')" class="bg-red-500 text-white text-[10px] px-2 py-1 rounded">
-                            <i class="fa-solid fa-trash"></i> Hapus
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+            dataKaryawanLocal.forEach(k => {
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2 font-bold">${k.nama}</td>
+                        <td class="p-2">${k.kode}</td>
+                        <td class="p-2">${k.jabatan}</td>
+                        <td class="p-2">${k.role}</td>
+                        <td class="p-2 text-center">
+                            <button onclick="hapusKaryawan('${k.id}')" class="bg-red-500 text-white text-[10px] px-2 py-1 rounded">Hapus</button>
+                        </td>
+                    </tr>`;
             });
         }
 
-        // --- SINKRONISASI LOGO ---
-        const configRef = doc(db, "settings", "app_config");
+        // REALTIME FIREBASE - SINKRONISASI LAPORAN
+        const refLaporan = collection(db, "laporan");
+        onSnapshot(refLaporan, (snap) => {
+            dataLaporanLocal = [];
+            snap.forEach(doc => dataLaporanLocal.push({ id: doc.id, ...doc.data() }));
+            renderTabelLaporan();
+        });
 
+        window.simpanLaporan = async function(e) {
+            e.preventDefault();
+
+            let checklistDipilih = [];
+            document.querySelectorAll('.chk-ob:checked').forEach(c => checklistDipilih.push(c.value));
+
+            const laporan = {
+                nama: document.getElementById('form-nama-karyawan').value,
+                modul: document.getElementById('form-jenis-laporan').value,
+                waktu: document.getElementById('form-waktu').value,
+                lokasi: document.getElementById('form-lokasi').value || '-',
+                keterangan: document.getElementById('form-keterangan').value || '-',
+                checklist: checklistDipilih.join(', ') || '-'
+            };
+
+            try {
+                await addDoc(refLaporan, laporan);
+                document.getElementById('form-lokasi').value = '';
+                document.getElementById('form-keterangan').value = '';
+                document.querySelectorAll('.chk-ob').forEach(c => c.checked = false);
+                alert('Laporan Berhasil Terkirim Secara Realtime!');
+            } catch (err) { alert('Gagal mengirim: ' + err.message); }
+        };
+
+        window.hapusLaporan = async function(id) {
+            if (confirm('Hapus data laporan ini?')) {
+                await deleteDoc(doc(db, "laporan", id));
+            }
+        };
+
+        window.renderTabelLaporan = function() {
+            const tbody = document.getElementById('tabel-laporan-body');
+            const filterDivisi = document.getElementById('filter-divisi-laporan').value;
+            tbody.innerHTML = '';
+
+            const filteredData = filterDivisi === 'Semua' 
+                ? dataLaporanLocal 
+                : dataLaporanLocal.filter(l => l.modul === filterDivisi);
+
+            filteredData.forEach(l => {
+                const detail = l.checklist && l.checklist !== '-' 
+                    ? `[Checklist: ${l.checklist}] - ${l.keterangan}` 
+                    : l.keterangan;
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2 text-gray-500">${l.waktu}</td>
+                        <td class="p-2 font-bold">${l.nama}</td>
+                        <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold">${l.modul}</span></td>
+                        <td class="p-2">${l.lokasi}</td>
+                        <td class="p-2">${detail}</td>
+                        <td class="p-2 text-center">
+                            <button onclick="hapusLaporan('${l.id}')" class="bg-red-500 text-white text-[10px] px-2 py-1 rounded">Hapus</button>
+                        </td>
+                    </tr>`;
+            });
+        };
+
+        // RUNNING TEXT / PENGUMUMAN
+        const refPengumuman = doc(db, "settings", "running_text");
+        onSnapshot(refPengumuman, (docSnap) => {
+            if (docSnap.exists() && docSnap.data().teks) {
+                document.getElementById('running-text-display').innerText = docSnap.data().teks;
+            }
+        });
+
+        window.ubahRunningText = async function() {
+            const teks = document.getElementById('admin-running-text').value.trim();
+            if (!teks) return alert('Ketikkan teks pengumuman terlebih dahulu!');
+            await setDoc(refPengumuman, { teks }, { merge: true });
+            document.getElementById('admin-running-text').value = '';
+            alert('Running Text Berhasil Diperbarui!');
+        };
+
+        // EXPORT EXCEL PER DIVISI & TOTAL
+        window.exportKeExcel = function(divisiTarget) {
+            const dataFiltered = divisiTarget === 'Semua' 
+                ? dataLaporanLocal 
+                : dataLaporanLocal.filter(l => l.modul === divisiTarget);
+
+            if (dataFiltered.length === 0) return alert(`Belum ada data laporan untuk Divisi ${divisiTarget}!`);
+
+            const excelData = dataFiltered.map((item, idx) => ({
+                "NO": idx + 1,
+                "TANGGAL & WAKTU": item.waktu,
+                "NAMA KARYAWAN": item.nama,
+                "DIVISI": item.modul,
+                "LOKASI": item.lokasi,
+                "DETAIL / CHECKLIST": item.checklist && item.checklist !== '-' ? `[Checklist: ${item.checklist}] ${item.keterangan}` : item.keterangan
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, `Laporan_${divisiTarget}`);
+            XLSX.writeFile(wb, `Laporan_${divisiTarget}_GRAND_EL_HAJJ.xlsx`);
+        };
+
+        // SINKRONISASI LOGO BASE64
+        const configRef = doc(db, "settings", "app_config");
         onSnapshot(configRef, (docSnap) => {
             if (docSnap.exists() && docSnap.data().logo) {
-                tampilkanLogo(docSnap.data().logo);
+                const logo = docSnap.data().logo;
+                document.getElementById('icon-default-splash').classList.add('hidden');
+                document.getElementById('img-logo-splash').src = logo;
+                document.getElementById('img-logo-splash').classList.remove('hidden');
+
+                document.getElementById('icon-default-nav').classList.add('hidden');
+                document.getElementById('img-logo-nav').src = logo;
+                document.getElementById('img-logo-nav').classList.remove('hidden');
             }
         });
 
@@ -268,26 +520,13 @@
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = async (e) => {
-                    const base64Image = e.target.result;
-                    await setDoc(configRef, { logo: base64Image }, { merge: true });
+                    await setDoc(configRef, { logo: e.target.result }, { merge: true });
                     tutupModalLogo();
                     alert('Logo berhasil diperbarui!');
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             }
         });
-
-        function tampilkanLogo(logoBase64) {
-            document.getElementById('icon-default-splash').classList.add('hidden');
-            const imgSplash = document.getElementById('img-logo-splash');
-            imgSplash.src = logoBase64;
-            imgSplash.classList.remove('hidden');
-
-            document.getElementById('icon-default-nav').classList.add('hidden');
-            const imgNav = document.getElementById('img-logo-nav');
-            imgNav.src = logoBase64;
-            imgNav.classList.remove('hidden');
-        }
     </script>
 </body>
 </html>
