@@ -1322,23 +1322,27 @@
             tutupModul();
             document.getElementById('splash-screen').classList.remove('hidden');
         }
-        <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+       <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-    apiKey: "AIzaSyD9c5qP19HGruxMFrVlOoqaxyxe2zwDoaA",
-    authDomain: "aplikasi-grand-el-hajj.firebaseapp.com",
-    databaseURL: "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "aplikasi-grand-el-hajj",
-    storageBucket: "aplikasi-grand-el-hajj.firebasestorage.app",
-    messagingSenderId: "205554063779",
-    appId: "1:205554063779:web:c8e5de2802ad9824d16216",
-    measurementId: "G-NX1GJ7958X"
-  };
+      const firebaseConfig = {
+        apiKey: "AIzaSyD9c5qP19HGruxMFrVlOoqaxyxe2zwDoaA",
+        authDomain: "aplikasi-grand-el-hajj.firebaseapp.com",
+        databaseURL: "https://aplikasi-grand-el-hajj-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "aplikasi-grand-el-hajj",
+        storageBucket: "aplikasi-grand-el-hajj.firebasestorage.app",
+        messagingSenderId: "205554063779",
+        appId: "1:205554063779:web:c8e5de2802ad9824d16216",
+        measurementId: "G-NX1GJ7958X"
+      };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+      const app = initializeApp(firebaseConfig);
+      
+      // Mendaftarkan variabel & fungsi Firebase ke Window agar bisa diakses global oleh tombol HTML
+      window.db = getFirestore(app);
+      window.firestoreTools = { collection, addDoc, onSnapshot, doc, deleteDoc, setDoc };
+
 </script>
        
 </body>
