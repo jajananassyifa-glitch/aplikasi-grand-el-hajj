@@ -14,8 +14,8 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-800 min-h-screen">
 
-    <!-- SPLASH SCREEN -->
-    <div id="splash-screen" class="bg-hotel fixed inset-0 flex flex-col items-center justify-center p-4 z-50 text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200');">
+    <!-- SPLASH SCREEN / PIN MASUK -->
+    <div id="splash-screen" class="bg-hotel fixed inset-0 flex flex-col items-center justify-center p-4 z-50 text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200');">
         <div class="absolute top-4 right-4">
             <button onclick="bukaModalAdmin()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-bold shadow-lg transition flex items-center">
                 <i class="fa-solid fa-user-shield mr-1.5"></i> Menu Admin
@@ -38,7 +38,7 @@
 
             <div class="w-full space-y-3">
                 <input type="password" id="input-kode-awal" placeholder="Masukkan Kode Unik (misal: 001)" class="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 text-center text-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <button onclick="prosesMasukAwal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition">
+                <button onclick="prosesMasukAwal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition text-sm">
                     MASUK KE SYSTEM
                 </button>
             </div>
@@ -53,10 +53,10 @@
                     <i id="icon-default-nav" class="fa-solid fa-hotel text-white text-sm"></i>
                     <img id="img-logo-nav" class="w-full h-full object-cover hidden" alt="Logo">
                 </div>
-                <span class="font-bold tracking-wider text-amber-400">GRAND EL HAJJ</span>
+                <span class="font-bold tracking-wider text-amber-400 text-sm md:text-base">GRAND EL HAJJ</span>
             </div>
-            <div class="flex items-center space-x-3">
-                <span id="user-display" class="text-xs bg-slate-800 px-3 py-1 rounded-full text-blue-300 border border-slate-700">Tamu</span>
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <span id="user-display" class="text-[11px] bg-slate-800 px-3 py-1 rounded-full text-blue-300 border border-slate-700">Tamu</span>
                 <button onclick="bukaModalAdmin()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
                     <i class="fa-solid fa-user-shield mr-1"></i> Admin
                 </button>
@@ -68,11 +68,12 @@
     </nav>
 
     <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+
         <!-- MODUL WORKER / KARYAWAN -->
         <div id="section-modul" class="hidden space-y-6">
             <!-- PENGUMUMAN / RUNNING TEXT -->
             <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm flex items-center justify-between">
-                <div class="flex items-center space-x-3 overflow-hidden">
+                <div class="flex items-center space-x-3 overflow-hidden w-full">
                     <i class="fa-solid fa-bullhorn text-amber-600 text-lg animate-bounce"></i>
                     <marquee id="running-text-display" class="text-xs font-bold text-amber-900">Selamat datang di Sistem Operasional GRAND EL HAJJ!</marquee>
                 </div>
@@ -84,7 +85,7 @@
                     <i class="fa-solid fa-clipboard-list mr-2 text-blue-600"></i> Form Laporan Operasional
                 </h3>
                 
-                <form id="form-laporan" onsubmit="simpanLaporan(event)" class="p-2 space-y-4">
+                <form id="form-laporan" onsubmit="simpanLaporan(event)" class="space-y-4">
                     <input type="hidden" id="form-jenis-laporan">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -98,14 +99,25 @@
                         </div>
                     </div>
 
-                    <!-- SUB-MODUL KHUSUS ABSENSI -->
-                    <div id="section-absensi-khusus" class="hidden space-y-4 bg-slate-50 p-4 rounded-xl border">
-                        <div>
-                            <label class="block text-xs font-semibold mb-1">Tipe Absensi</label>
-                            <select id="form-tipe-absensi" class="w-full border rounded-lg p-2 text-xs font-bold text-slate-700">
-                                <option value="MASUK">Absen Masuk</option>
-                                <option value="PULANG">Absen Pulang</option>
-                            </select>
+                    <!-- SUB-MODUL KHUSUS TEKNISI -->
+                    <div id="section-teknisi-khusus" class="hidden space-y-3 bg-blue-50/50 p-4 rounded-xl border border-blue-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Kategori Pekerjaan</label>
+                                <select id="form-kategori-teknisi" class="w-full border rounded-lg p-2 text-xs font-semibold">
+                                    <option value="Perbaikan">Perbaikan (Repair)</option>
+                                    <option value="Perawatan Rutin">Perawatan Rutin (Maintenance)</option>
+                                    <option value="Pengecekan Darurat">Pengecekan Darurat (Emergency)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Status Pengerjaan</label>
+                                <select id="form-status-teknisi" class="w-full border rounded-lg p-2 text-xs font-semibold">
+                                    <option value="Selesai">Selesai (Done)</option>
+                                    <option value="Prosedur Lanjutan">Perlu Prosedur Lanjutan</option>
+                                    <option value="Menunggu Sparepart">Menunggu Sparepart</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -113,23 +125,50 @@
                     <div id="section-checklist-ob" class="hidden space-y-3 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
                         <label class="block text-xs font-bold text-amber-900">Checklist Kebersihan Area:</label>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Sapu & Pel" class="chk-ob"> <span>Sapu & Pel Floor</span></label>
-                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Toilet Clean" class="chk-ob"> <span>Sanitasi Toilet</span></label>
-                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Kaca & Jendela" class="chk-ob"> <span>Pembersihan Kaca</span></label>
-                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Sampah Diangkut" class="chk-ob"> <span>Buang Sampah</span></label>
-                            <label class="flex items-center space-x-2 bg-white p-2 rounded border"><input type="checkbox" value="Disinfektan" class="chk-ob"> <span>Disinfeksi Area</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border cursor-pointer"><input type="checkbox" value="Sapu & Pel" class="chk-ob"> <span>Sapu & Pel Floor</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border cursor-pointer"><input type="checkbox" value="Sanitasi Toilet" class="chk-ob"> <span>Sanitasi Toilet</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border cursor-pointer"><input type="checkbox" value="Kaca & Jendela" class="chk-ob"> <span>Pembersihan Kaca</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border cursor-pointer"><input type="checkbox" value="Buang Sampah" class="chk-ob"> <span>Buang Sampah</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border cursor-pointer"><input type="checkbox" value="Disinfeksi Area" class="chk-ob"> <span>Disinfeksi Area</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded border cursor-pointer"><input type="checkbox" value="Rapikan Furnitur" class="chk-ob"> <span>Rapikan Furnitur</span></label>
                         </div>
                     </div>
 
-                    <!-- LOKASI & DETAIL -->
+                    <!-- SUB-MODUL KHUSUS ABSENSI & KAMERA (STAFF/UMUM) -->
+                    <div id="section-absensi-khusus" class="hidden space-y-4 bg-slate-50 p-4 rounded-xl border">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Tipe Absensi</label>
+                            <select id="form-tipe-absensi" class="w-full border rounded-lg p-2 text-xs font-bold text-slate-700">
+                                <option value="MASUK">Absen Masuk Kerja</option>
+                                <option value="PULANG">Absen Pulang Kerja</option>
+                            </select>
+                        </div>
+
+                        <!-- MODUL KAMERA SNAPSHOT -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-semibold">Ambil Foto Absensi Realtime</label>
+                            <div class="flex flex-col items-center space-y-2">
+                                <video id="webcam" autoplay playsinline class="w-full max-w-xs h-48 bg-black rounded-lg object-cover hidden"></video>
+                                <canvas id="canvas-photo" class="w-full max-w-xs h-48 rounded-lg object-cover hidden border"></canvas>
+                                <img id="preview-photo" class="w-full max-w-xs h-48 rounded-lg object-cover hidden border" />
+                                
+                                <div class="flex space-x-2">
+                                    <button type="button" onclick="bukaKamera()" id="btn-buka-kamera" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold"><i class="fa-solid fa-camera mr-1"></i> Buka Kamera</button>
+                                    <button type="button" onclick="ambilFoto()" id="btn-jepret" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold hidden"><i class="fa-solid fa-circle-dot mr-1"></i> Jepret Foto</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LOKASI & DETAIL PEKERJAAN -->
                     <div id="section-detail-kerja" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold mb-1">Detail Lokasi / Area Kerja</label>
-                            <input type="text" id="form-lokasi" placeholder="Contoh: Kamar 301 / Lobby Utama" class="w-full border rounded-lg p-2.5 text-xs">
+                            <label class="block text-xs font-semibold mb-1">Detail Lokasi / Area / Unit</label>
+                            <input type="text" id="form-lokasi" placeholder="Contoh: Kamar 301 / Lobby Utama / Ruang Server" class="w-full border rounded-lg p-2.5 text-xs">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1">Detail Pekerjaan / Temuan Masalah</label>
-                            <textarea id="form-keterangan" rows="3" placeholder="Tuliskan keterangan detail..." class="w-full border rounded-lg p-2.5 text-xs"></textarea>
+                            <label class="block text-xs font-semibold mb-1">Detail Keterangan Laporan / Temuan</label>
+                            <textarea id="form-keterangan" rows="3" placeholder="Tuliskan catatan detail pengerjaan atau temuan di lapangan..." class="w-full border rounded-lg p-2.5 text-xs"></textarea>
                         </div>
                     </div>
 
@@ -143,7 +182,10 @@
         <!-- DASBOR UTAMA ADMIN -->
         <div id="dasbor-admin-section" class="space-y-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 gap-3">
-                <h2 class="text-xl font-bold text-slate-800">Dasbor Utama Admin - GRAND EL HAJJ</h2>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Dasbor Utama Admin</h2>
+                    <p class="text-xs text-gray-500">Pusat Kendali Operasional GRAND EL HAJJ</p>
+                </div>
                 <div class="flex flex-wrap gap-2">
                     <button onclick="mintaAksesGantiLogo()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center shadow">
                         <i class="fa-solid fa-image mr-1.5"></i> Ganti Logo
@@ -160,17 +202,27 @@
                 </div>
             </div>
 
-            <!-- PERUBAHAN RUNNING TEXT / PENGUMUMAN -->
-            <div class="bg-white p-4 rounded-xl shadow border space-y-3">
-                <h3 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-bullhorn mr-1.5 text-amber-500"></i> Pengaturan Running Text Divisi</h3>
-                <div class="flex gap-2">
-                    <select id="admin-target-divisi" class="border rounded px-3 py-1.5 text-xs font-bold text-slate-700">
-                        <option value="Semua">Semua Divisi</option>
-                        <option value="Teknisi">Teknisi</option>
-                        <option value="OB">OB / CS</option>
-                    </select>
-                    <input type="text" id="admin-running-text" placeholder="Tuliskan teks pengumuman baru..." class="flex-1 border rounded px-3 py-1.5 text-xs">
-                    <button onclick="ubahRunningText()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-4 py-1.5 rounded font-bold">Update</button>
+            <!-- CHART ANALYTICS / STATISTIK -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow border md:col-span-1">
+                    <h4 class="text-xs font-bold text-gray-600 mb-2 border-b pb-1">Statistik Laporan per Divisi</h4>
+                    <div class="h-44 flex items-center justify-center">
+                        <canvas id="chart-divisi"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border md:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-600 mb-2 border-b pb-1"><i class="fa-solid fa-bullhorn text-amber-500 mr-1"></i> Update Pengumuman Running Text</h4>
+                        <div class="flex gap-2 my-2">
+                            <input type="text" id="admin-running-text" placeholder="Ketikkan pesan pengumuman baru di sini..." class="flex-1 border rounded px-3 py-1.5 text-xs">
+                            <button onclick="ubahRunningText()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-4 py-1.5 rounded font-bold">Update</button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border text-xs text-slate-600 space-y-1">
+                        <p class="font-bold text-slate-800"><i class="fa-solid fa-info-circle text-blue-600 mr-1"></i> Ringkasan Sistem:</p>
+                        <p>• Data tersimpan secara realtime di cloud database (Firebase Firestore).</p>
+                        <p>• Laporan terpisah otomatis sesuai divisi kerja karyawan.</p>
+                    </div>
                 </div>
             </div>
 
@@ -180,7 +232,7 @@
                     <i class="fa-solid fa-user-plus mr-2 text-indigo-600"></i> Form Pendaftaran Karyawan Baru
                 </h3>
                 
-                <form id="form-tambah-karyawan" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border">
+                <form id="form-tambah-karyawan" class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-xl border">
                     <div>
                         <label class="block text-xs font-semibold mb-1">Nama Lengkap</label>
                         <input type="text" id="add-nama" placeholder="Nama Karyawan" required class="w-full border rounded px-3 py-1.5 text-xs outline-none">
@@ -194,14 +246,14 @@
                         <input type="text" id="add-jabatan" placeholder="Contoh: Senior Technician" required class="w-full border rounded px-3 py-1.5 text-xs outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold mb-1">Divisi / Modul</label>
+                        <label class="block text-xs font-semibold mb-1">Divisi / Modul Modul</label>
                         <select id="add-role" class="w-full border rounded px-3 py-1.5 text-xs outline-none">
                             <option value="Teknisi">Teknisi</option>
                             <option value="OB">OB / Cleaning Service</option>
-                            <option value="Umum">Umum / Staff</option>
+                            <option value="Umum">Umum / Staff Absensi</option>
                         </select>
                     </div>
-                    <div class="md:col-span-3 text-right">
+                    <div class="md:col-span-4 text-right">
                         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-xs transition">
                             <i class="fa-solid fa-save mr-1"></i> Simpan Data Karyawan
                         </button>
@@ -235,7 +287,7 @@
                         <option value="Semua">Tampilkan Semua Divisi</option>
                         <option value="Teknisi">Filter Teknisi</option>
                         <option value="OB">Filter OB / CS</option>
-                        <option value="Umum">Filter Umum</option>
+                        <option value="Umum">Filter Umum / Absensi</option>
                     </select>
                 </div>
                 <div class="overflow-x-auto">
@@ -246,7 +298,8 @@
                                 <th class="p-2">Nama</th>
                                 <th class="p-2">Divisi</th>
                                 <th class="p-2">Lokasi</th>
-                                <th class="p-2">Detail Laporan</th>
+                                <th class="p-2">Detail Laporan / Pengerjaan</th>
+                                <th class="p-2 text-center">Foto Absen</th>
                                 <th class="p-2 text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -263,7 +316,7 @@
             <h3 class="font-bold text-sm text-center text-slate-800">Pengaturan Logo GRAND EL HAJJ</h3>
             
             <div id="form-upload-logo" class="space-y-3">
-                <label class="block text-xs font-semibold text-gray-700">Pilih File Logo Baru:</label>
+                <label class="block text-xs font-semibold text-gray-700">Pilih File Logo Baru (PNG/JPG):</label>
                 <input type="file" id="file-logo-baru" accept="image/*" class="w-full border p-2 rounded text-xs bg-gray-50">
                 <button id="btn-simpan-logo" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs">Terapkan Logo Baru</button>
             </div>
@@ -272,7 +325,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE & LOGIK LENGKAP UTUH -->
+    <!-- SCRIPT FIREBASE & LOGIKA UTUH SELESAI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -294,13 +347,16 @@
         let dataKaryawanLocal = [];
         let dataLaporanLocal = [];
         let userLoginAktif = null;
+        let fotoDataUrl = null;
+        let chartInstance = null;
 
-        // FUNGSI NAVIGASI GLOBAL UNTUK HTML
+        // FUNGSI NAVIGASI GLOBAL
         window.bukaModalAdmin = function() {
             document.getElementById('splash-screen').classList.add('hidden');
             document.getElementById('section-modul').classList.add('hidden');
             document.getElementById('dasbor-admin-section').classList.remove('hidden');
             document.getElementById('user-display').innerText = "Admin Utama";
+            updateChart();
         };
 
         window.prosesMasukAwal = function() {
@@ -318,13 +374,14 @@
                 document.getElementById('form-nama-karyawan').value = ditemukan.nama;
                 document.getElementById('form-jenis-laporan').value = ditemukan.role;
 
-                // Atur visibilitas fitur modul khusus
+                // Modul khusus dinamis
+                document.getElementById('section-teknisi-khusus').classList.toggle('hidden', ditemukan.role !== 'Teknisi');
                 document.getElementById('section-checklist-ob').classList.toggle('hidden', ditemukan.role !== 'OB');
                 document.getElementById('section-absensi-khusus').classList.toggle('hidden', ditemukan.role !== 'Umum');
 
                 updateJam();
             } else {
-                alert('Kode Unik tidak terdaftar! Silakan minta Admin untuk mendaftarkan Anda.');
+                alert('Kode Unik tidak terdaftar! Mintalah Admin mendaftarkan Anda.');
             }
         };
 
@@ -350,7 +407,43 @@
         }
         setInterval(updateJam, 1000);
 
-        // REALTIME FIREBASE - SINKRONISASI KARYAWAN
+        // FITUR KAMERA
+        window.bukaKamera = async function() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('webcam');
+                video.srcObject = stream;
+                video.classList.remove('hidden');
+                document.getElementById('btn-jepret').classList.remove('hidden');
+                document.getElementById('btn-buka-kamera').classList.add('hidden');
+            } catch (e) {
+                alert('Kamera tidak terdeteksi atau izin ditolak.');
+            }
+        };
+
+        window.ambilFoto = function() {
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('canvas-photo');
+            const preview = document.getElementById('preview-photo');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            fotoDataUrl = canvas.toDataURL('image/jpeg');
+            preview.src = fotoDataUrl;
+            preview.classList.remove('hidden');
+
+            // Matikan stream video
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            video.classList.add('hidden');
+            document.getElementById('btn-jepret').classList.add('hidden');
+            document.getElementById('btn-buka-kamera').classList.remove('hidden');
+        };
+
+        // REALTIME KARYAWAN
         const refKaryawan = collection(db, "karyawan");
         onSnapshot(refKaryawan, (snap) => {
             dataKaryawanLocal = [];
@@ -387,7 +480,7 @@
                         <td class="p-2 font-bold">${k.nama}</td>
                         <td class="p-2">${k.kode}</td>
                         <td class="p-2">${k.jabatan}</td>
-                        <td class="p-2">${k.role}</td>
+                        <td class="p-2"><span class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded text-[10px] font-bold">${k.role}</span></td>
                         <td class="p-2 text-center">
                             <button onclick="hapusKaryawan('${k.id}')" class="bg-red-500 text-white text-[10px] px-2 py-1 rounded">Hapus</button>
                         </td>
@@ -395,12 +488,13 @@
             });
         }
 
-        // REALTIME FIREBASE - SINKRONISASI LAPORAN
+        // REALTIME LAPORAN
         const refLaporan = collection(db, "laporan");
         onSnapshot(refLaporan, (snap) => {
             dataLaporanLocal = [];
             snap.forEach(doc => dataLaporanLocal.push({ id: doc.id, ...doc.data() }));
             renderTabelLaporan();
+            updateChart();
         });
 
         window.simpanLaporan = async function(e) {
@@ -415,7 +509,11 @@
                 waktu: document.getElementById('form-waktu').value,
                 lokasi: document.getElementById('form-lokasi').value || '-',
                 keterangan: document.getElementById('form-keterangan').value || '-',
-                checklist: checklistDipilih.join(', ') || '-'
+                checklist: checklistDipilih.join(', ') || '-',
+                kategoriTeknisi: document.getElementById('form-kategori-teknisi')?.value || '-',
+                statusTeknisi: document.getElementById('form-status-teknisi')?.value || '-',
+                tipeAbsensi: document.getElementById('form-tipe-absensi')?.value || '-',
+                foto: fotoDataUrl || null
             };
 
             try {
@@ -423,12 +521,14 @@
                 document.getElementById('form-lokasi').value = '';
                 document.getElementById('form-keterangan').value = '';
                 document.querySelectorAll('.chk-ob').forEach(c => c.checked = false);
-                alert('Laporan Berhasil Terkirim Secara Realtime!');
+                fotoDataUrl = null;
+                document.getElementById('preview-photo').classList.add('hidden');
+                alert('Laporan Berhasil Terkirim!');
             } catch (err) { alert('Gagal mengirim: ' + err.message); }
         };
 
         window.hapusLaporan = async function(id) {
-            if (confirm('Hapus data laporan ini?')) {
+            if (confirm('Hapus laporan ini?')) {
                 await deleteDoc(doc(db, "laporan", id));
             }
         };
@@ -443,9 +543,14 @@
                 : dataLaporanLocal.filter(l => l.modul === filterDivisi);
 
             filteredData.forEach(l => {
-                const detail = l.checklist && l.checklist !== '-' 
-                    ? `[Checklist: ${l.checklist}] - ${l.keterangan}` 
-                    : l.keterangan;
+                let detail = l.keterangan;
+                if (l.modul === 'OB' && l.checklist !== '-') detail = `[Checklist: ${l.checklist}] - ${l.keterangan}`;
+                if (l.modul === 'Teknisi') detail = `[${l.kategoriTeknisi} - Status: ${l.statusTeknisi}] ${l.keterangan}`;
+                if (l.modul === 'Umum') detail = `[${l.tipeAbsensi}] ${l.keterangan}`;
+
+                const fotoElement = l.foto 
+                    ? `<a href="${l.foto}" target="_blank" class="text-blue-600 underline font-bold">Lihat Foto</a>` 
+                    : '-';
 
                 tbody.innerHTML += `
                     <tr class="border-b hover:bg-gray-50">
@@ -454,6 +559,7 @@
                         <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold">${l.modul}</span></td>
                         <td class="p-2">${l.lokasi}</td>
                         <td class="p-2">${detail}</td>
+                        <td class="p-2 text-center">${fotoElement}</td>
                         <td class="p-2 text-center">
                             <button onclick="hapusLaporan('${l.id}')" class="bg-red-500 text-white text-[10px] px-2 py-1 rounded">Hapus</button>
                         </td>
@@ -471,13 +577,37 @@
 
         window.ubahRunningText = async function() {
             const teks = document.getElementById('admin-running-text').value.trim();
-            if (!teks) return alert('Ketikkan teks pengumuman terlebih dahulu!');
+            if (!teks) return alert('Ketikkan teks terlebih dahulu!');
             await setDoc(refPengumuman, { teks }, { merge: true });
             document.getElementById('admin-running-text').value = '';
             alert('Running Text Berhasil Diperbarui!');
         };
 
-        // EXPORT EXCEL PER DIVISI & TOTAL
+        // CHART STATISTIK
+        function updateChart() {
+            const ctx = document.getElementById('chart-divisi');
+            if (!ctx) return;
+
+            const countTeknisi = dataLaporanLocal.filter(l => l.modul === 'Teknisi').length;
+            const countOB = dataLaporanLocal.filter(l => l.modul === 'OB').length;
+            const countUmum = dataLaporanLocal.filter(l => l.modul === 'Umum').length;
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Teknisi', 'OB / CS', 'Umum'],
+                    datasets: [{
+                        data: [countTeknisi, countOB, countUmum],
+                        backgroundColor: ['#2563eb', '#d97706', '#059669']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // EXPORT EXCEL
         window.exportKeExcel = function(divisiTarget) {
             const dataFiltered = divisiTarget === 'Semua' 
                 ? dataLaporanLocal 
@@ -491,7 +621,10 @@
                 "NAMA KARYAWAN": item.nama,
                 "DIVISI": item.modul,
                 "LOKASI": item.lokasi,
-                "DETAIL / CHECKLIST": item.checklist && item.checklist !== '-' ? `[Checklist: ${item.checklist}] ${item.keterangan}` : item.keterangan
+                "KATEGORI / ABSENSI": item.kategoriTeknisi || item.tipeAbsensi || '-',
+                "STATUS PEKERJAAN": item.statusTeknisi || '-',
+                "CHECKLIST OB": item.checklist || '-',
+                "DETAIL / KETERANGAN": item.keterangan
             }));
 
             const ws = XLSX.utils.json_to_sheet(excelData);
@@ -500,7 +633,7 @@
             XLSX.writeFile(wb, `Laporan_${divisiTarget}_GRAND_EL_HAJJ.xlsx`);
         };
 
-        // SINKRONISASI LOGO BASE64
+        // LOGO UTAMA VIA BASE64
         const configRef = doc(db, "settings", "app_config");
         onSnapshot(configRef, (docSnap) => {
             if (docSnap.exists() && docSnap.data().logo) {
