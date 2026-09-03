@@ -1438,7 +1438,7 @@ window.prosesGantiBackdrop = function(event) {
     if (file.size > 3 * 1024 * 1024) {
         alert("Ukuran gambar terlalu besar! Maksimal 3MB.");
         return;
-    }
+    };
     const reader = new FileReader();
     reader.onload = function(e) {
         const imageUrl = e.target.result;
